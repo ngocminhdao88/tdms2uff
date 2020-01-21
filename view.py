@@ -2,13 +2,11 @@
 
 # Form implementation generated from reading ui file 'view.ui'
 #
-# Created by: PyQt5 UI code generator 5.13.0
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -20,9 +18,9 @@ class Ui_Dialog(object):
         self.verticalLayout.setObjectName("verticalLayout")
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
-        self.openFileButton = QtWidgets.QPushButton(Dialog)
-        self.openFileButton.setObjectName("openFileButton")
-        self.horizontalLayout.addWidget(self.openFileButton)
+        self.openFilesButton = QtWidgets.QPushButton(Dialog)
+        self.openFilesButton.setObjectName("openFilesButton")
+        self.horizontalLayout.addWidget(self.openFilesButton)
         self.openFolderButton = QtWidgets.QPushButton(Dialog)
         self.openFolderButton.setObjectName("openFolderButton")
         self.horizontalLayout.addWidget(self.openFolderButton)
@@ -80,7 +78,7 @@ class Ui_Dialog(object):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
-        self.openFileButton.setText(_translate("Dialog", "Open files"))
+        self.openFilesButton.setText(_translate("Dialog", "Open files"))
         self.openFolderButton.setText(_translate("Dialog", "Open folder"))
         self.inputFileLabel.setText(_translate("Dialog", "Input files"))
         self.addToQueueButton.setText(_translate("Dialog", "Add to queue"))
@@ -88,3 +86,4 @@ class Ui_Dialog(object):
         self.channelsMappingLabel.setText(_translate("Dialog", "Channels mapping"))
         self.convertButton.setText(_translate("Dialog", "Convert"))
         self.outputQueueLabel.setText(_translate("Dialog", "Output queue"))
+
