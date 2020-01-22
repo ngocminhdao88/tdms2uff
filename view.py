@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'view.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -24,6 +26,9 @@ class Ui_Dialog(object):
         self.openFolderButton = QtWidgets.QPushButton(Dialog)
         self.openFolderButton.setObjectName("openFolderButton")
         self.horizontalLayout.addWidget(self.openFolderButton)
+        self.removeButton = QtWidgets.QPushButton(Dialog)
+        self.removeButton.setObjectName("removeButton")
+        self.horizontalLayout.addWidget(self.removeButton)
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
         self.verticalLayout.addLayout(self.horizontalLayout)
@@ -80,10 +85,10 @@ class Ui_Dialog(object):
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
         self.openFilesButton.setText(_translate("Dialog", "Open files"))
         self.openFolderButton.setText(_translate("Dialog", "Open folder"))
+        self.removeButton.setText(_translate("Dialog", "Remove"))
         self.inputFileLabel.setText(_translate("Dialog", "Input files"))
         self.addToQueueButton.setText(_translate("Dialog", "Add to queue"))
         self.sameSettingsCheckBox.setText(_translate("Dialog", "Same settings for all files"))
         self.channelsMappingLabel.setText(_translate("Dialog", "Channels mapping"))
         self.convertButton.setText(_translate("Dialog", "Convert"))
         self.outputQueueLabel.setText(_translate("Dialog", "Output queue"))
-

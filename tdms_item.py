@@ -2,11 +2,13 @@
 # minhdao.ngoc@linamar
 
 import os
+from PyQt5.QtCore import *
+
 
 class TdmsItem():
     def __init__(self, path):
         self.m_path = path
-        self.m_name = ""
+        self._getFileName()
         self.m_channels = [[]] # name, type, unit
         self.m_channelColumnCount = 3
 
@@ -25,6 +27,10 @@ class TdmsItem():
     def columnCount(self):
         #Return number of columns of data in item's channel
         return self.m_channelColumnCount
+
+    def channels(self):
+        #Return channels of this tdms file
+        return self.m_channels
 
     def channelName(self, row):
         #Return channel's name at row
@@ -46,4 +52,5 @@ class TdmsItem():
 
     def _getFileName(self):
         #Get base file name from a absolute path
-        self.m_name = os.path.basename(self.path)
+        fileInfo = QFileInfo(self.m_path)
+        self.m_name = fileInfo.fileName()
