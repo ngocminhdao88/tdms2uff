@@ -19,23 +19,30 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QPushButton" name="openFilesButton">
+        <widget class="QPushButton" name="addFilesButton">
          <property name="text">
-          <string>Open files</string>
+          <string>Add files</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="openFolderButton">
+        <widget class="QPushButton" name="addFolderButton">
          <property name="text">
-          <string>Open folder</string>
+          <string>Add folder</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="removeButton">
+        <widget class="QPushButton" name="removeFromInputButton">
          <property name="text">
           <string>Remove</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="addToOutputQueueButton">
+         <property name="text">
+          <string>Add to output</string>
          </property>
         </widget>
        </item>
@@ -55,14 +62,18 @@
       </layout>
      </item>
      <item>
-      <widget class="QLabel" name="inputFileLabel">
+      <widget class="QLabel" name="inputLabel">
        <property name="text">
         <string>Input files</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QListView" name="inputFilesListView"/>
+      <widget class="QListView" name="inputListView">
+       <property name="selectionMode">
+        <enum>QAbstractItemView::ExtendedSelection</enum>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
@@ -70,13 +81,6 @@
     <layout class="QVBoxLayout" name="verticalLayout_2">
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <item>
-        <widget class="QPushButton" name="addToQueueButton">
-         <property name="text">
-          <string>Add to queue</string>
-         </property>
-        </widget>
-       </item>
        <item>
         <widget class="QCheckBox" name="sameSettingsCheckBox">
          <property name="text">
@@ -116,9 +120,30 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
+        <widget class="QPushButton" name="setOutputFolderButton">
+         <property name="text">
+          <string>Set folder</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="convertButton">
          <property name="text">
           <string>Convert</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="removeFromOutputButton">
+         <property name="text">
+          <string>Remove</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="backToInputButton">
+         <property name="text">
+          <string>Back to input</string>
          </property>
         </widget>
        </item>
@@ -138,14 +163,18 @@
       </layout>
      </item>
      <item>
-      <widget class="QLabel" name="outputQueueLabel">
+      <widget class="QLabel" name="outputLabel">
        <property name="text">
         <string>Output queue</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QListView" name="outputQueueListView"/>
+      <widget class="QListView" name="outputListView">
+       <property name="selectionMode">
+        <enum>QAbstractItemView::ExtendedSelection</enum>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

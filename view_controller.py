@@ -4,8 +4,7 @@
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from view import Ui_Dialog
-from tdms_item import TdmsItem
-from tdms_list_model import TdmsListModel
+from tdms_obj_list_model import TdmsObjListModel, TdmsObj
 
 class ViewController(QDialog, Ui_Dialog):
     def __init__(self, parent=None):
@@ -13,25 +12,46 @@ class ViewController(QDialog, Ui_Dialog):
         super(ViewController, self).__init__(parent)
         self.setupUi(self)
 
-        self.tdmsListModel = TdmsListModel()
-        self.inputFilesListView.setModel(self.tdmsListModel)
+        self.outputDir = ""
 
-        self.openFilesButton.clicked.connect(self.openFiles)
-        self.openFolderButton.clicked.connect(self.openDir)
-        self.removeButton.clicked.connect(self.remove)
+        self.inputListModel = TdmsObjListModel()
+        self.inputListView.setModel(self.inputListModel)
+
+        self.outputListModel = TdmsObjListModel()
+        self.outputListView.setModel(self.outputListModel)
+
+        self.addFilesButton.clicked.connect(self.addFiles)
+        self.addFolderButton.clicked.connect(self.addDir)
+        self.removeFromInputButton.clicked.connect(self.removeFromInput)
+        self.addToOutputQueueButton.clicked.connect(self.addToOutputQueue)
+
+        self.setOutputFolderButton.clicked.connect(self.setOutputDir)
+        self.convertButton.clicked.connect(self.runOutputQueue)
+        self.removeFromOutputButton.clicked.connect(self.removeFromOutput)
+        self.backToInputButton.clicked.connect(self.backToInput)
 
     @pyqtSlot()
-    def remove(self):
+    def removeFromInput(self):
         #Remove input files
-        indexes = self.inputFilesListView.selectedIndexes()
+        indexes = self.inputListView.selectedIndexes()
 
         if len(indexes) > 0:
-            index = indexes[0]
-            #Remove the item from model
-            self.tdmsListModel.removeRows(index.row(), 1)
+            #Remove obj in reverse so it doesn't mess up the subsequent indexes
+            for index in sorted(indexes, reverse=True):
+                self.inputListModel.removeRow(index.row())
 
     @pyqtSlot()
-    def openFiles(self):
+    def removeFromOutput(self):
+        #Remove output files
+        indexes = self.outputListView.selectedIndexes()
+
+        if len(indexes) > 0:
+            #Remove obj in reverse so it doesn't mess up the subsequent indexes
+            for index in sorted(indexes, reverse=True):
+                self.outputListModel.removeRow(index.row())
+
+    @pyqtSlot()
+    def addFiles(self):
         #Open a dialog to select one or multiple files
         filePaths = QFileDialog.getOpenFileNames(
                 self,
@@ -41,32 +61,80 @@ class ViewController(QDialog, Ui_Dialog):
 
         #extract only the file path
         filePaths = filePaths[0]
-        items = []
+        objs = []
 
         for filePath in filePaths:
-            item = TdmsItem(filePath)
-            items.append(item)
+            obj = TdmsObj(filePath)
+            objs.append(item)
 
-        self.tdmsListModel.addItems(items)
+        self.inputListModel.addTdmsObjs(objs)
 
     @pyqtSlot()
-    def openDir(self):
+    def addDir(self):
         #Open a dialog to select working directory
-        dirPath = QFileDialog.getExistingDirectory(
+        selectedDir = QFileDialog.getExistingDirectory(
                 self,
                 "Open directory",
                 ".",
-                QFileDialog.ShowDirsOnly | QFileDialog.DontConfirmOverwrite)
+                QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
 
-        #print(dirPath)
+        #Add only tdms files into the input model
+        if len(selectedDir) > 0:
+            dirObj = QDir(selectedDir)
+            entryInfoList = dirObj.entryInfoList(
+                    ["*.tdms"],
+                    QDir.Files)
+
+            objs = []
+
+            for fileInfo in entryInfoList:
+                tdmsObj = TdmsObj(fileInfo.absoluteFilePath())
+                objs.append(tdmsObj)
+
+            self.inputListModel.addTdmsObjs(objs)
 
     @pyqtSlot()
-    def addToQueue(self):
+    def setOutputDir(self):
+        #Ask user to select the output folder
+        selectedDir = QFileDialog.getExistingDirectory(
+                self,
+                "Set output directory",
+                ".",
+                QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
+
+        if selectedDir != self.outputDir:
+            self.outputDir = selectedDir
+
+    @pyqtSlot()
+    def addToOutputQueue(self):
         #Add selected files into working queue
-        pass
+        indexes = self.inputListView.selectedIndexes()
+
+        if len(indexes) > 0:
+            tdmsObjs = []
+            for index in sorted(indexes, reverse=True):
+                tdmsObj = self.inputListModel.data(index, role=TdmsObjListModel.ObjRole)
+                self.inputListModel.removeRow(index.row())
+                tdmsObjs.append(tdmsObj)
+
+            self.outputListModel.addTdmsObjs(tdmsObjs)
 
     @pyqtSlot()
-    def convert(self):
+    def backToInput(self):
+        #Add selected files into working queue
+        indexes = self.outputListView.selectedIndexes()
+
+        if len(indexes) > 0:
+            tdmsObjs = []
+            for index in sorted(indexes, reverse=True):
+                tdmsObj = self.outputListModel.data(index, role=TdmsObjListModel.ObjRole)
+                self.outputListModel.removeRow(index.row())
+                tdmsObjs.append(tdmsObj)
+
+            self.inputListModel.addTdmsObjs(tdmsObjs)
+
+
+    @pyqtSlot()
+    def runOutputQueue(self):
         #Convert the files in working queue
         pass
-
