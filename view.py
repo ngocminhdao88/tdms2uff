@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'view.ui'
+# Form implementation generated from reading ui file '.\view.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -36,10 +38,14 @@ class Ui_Dialog(object):
         self.inputLabel = QtWidgets.QLabel(Dialog)
         self.inputLabel.setObjectName("inputLabel")
         self.verticalLayout.addWidget(self.inputLabel)
-        self.inputListView = QtWidgets.QListView(Dialog)
-        self.inputListView.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
-        self.inputListView.setObjectName("inputListView")
-        self.verticalLayout.addWidget(self.inputListView)
+        self.textEdit = QtWidgets.QTextEdit(Dialog)
+        self.textEdit.setMaximumSize(QtCore.QSize(16777215, 22))
+        self.textEdit.setObjectName("textEdit")
+        self.verticalLayout.addWidget(self.textEdit)
+        self.inputTreeView = QtWidgets.QTreeView(Dialog)
+        self.inputTreeView.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.inputTreeView.setObjectName("inputTreeView")
+        self.verticalLayout.addWidget(self.inputTreeView)
         self.horizontalLayout_4.addLayout(self.verticalLayout)
         self.verticalLayout_2 = QtWidgets.QVBoxLayout()
         self.verticalLayout_2.setObjectName("verticalLayout_2")
@@ -54,9 +60,9 @@ class Ui_Dialog(object):
         self.channelsMappingLabel = QtWidgets.QLabel(Dialog)
         self.channelsMappingLabel.setObjectName("channelsMappingLabel")
         self.verticalLayout_2.addWidget(self.channelsMappingLabel)
-        self.channelsTableView = QtWidgets.QTableView(Dialog)
-        self.channelsTableView.setObjectName("channelsTableView")
-        self.verticalLayout_2.addWidget(self.channelsTableView)
+        self.channelsTreeView = QtWidgets.QTreeView(Dialog)
+        self.channelsTreeView.setObjectName("channelsTreeView")
+        self.verticalLayout_2.addWidget(self.channelsTreeView)
         self.horizontalLayout_4.addLayout(self.verticalLayout_2)
         self.verticalLayout_3 = QtWidgets.QVBoxLayout()
         self.verticalLayout_3.setObjectName("verticalLayout_3")
@@ -80,10 +86,10 @@ class Ui_Dialog(object):
         self.outputLabel = QtWidgets.QLabel(Dialog)
         self.outputLabel.setObjectName("outputLabel")
         self.verticalLayout_3.addWidget(self.outputLabel)
-        self.outputListView = QtWidgets.QListView(Dialog)
-        self.outputListView.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
-        self.outputListView.setObjectName("outputListView")
-        self.verticalLayout_3.addWidget(self.outputListView)
+        self.outputTreeView = QtWidgets.QTreeView(Dialog)
+        self.outputTreeView.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.outputTreeView.setObjectName("outputTreeView")
+        self.verticalLayout_3.addWidget(self.outputTreeView)
         self.horizontalLayout_4.addLayout(self.verticalLayout_3)
 
         self.retranslateUi(Dialog)
@@ -97,6 +103,7 @@ class Ui_Dialog(object):
         self.removeFromInputButton.setText(_translate("Dialog", "Remove"))
         self.addToOutputQueueButton.setText(_translate("Dialog", "Add to output"))
         self.inputLabel.setText(_translate("Dialog", "Input files"))
+        self.textEdit.setPlaceholderText(_translate("Dialog", "Name as filter"))
         self.sameSettingsCheckBox.setText(_translate("Dialog", "Same settings for all files"))
         self.channelsMappingLabel.setText(_translate("Dialog", "Channels mapping"))
         self.setOutputFolderButton.setText(_translate("Dialog", "Set folder"))
@@ -104,4 +111,3 @@ class Ui_Dialog(object):
         self.removeFromOutputButton.setText(_translate("Dialog", "Remove"))
         self.backToInputButton.setText(_translate("Dialog", "Back to input"))
         self.outputLabel.setText(_translate("Dialog", "Output queue"))
-
