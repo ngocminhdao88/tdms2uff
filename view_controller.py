@@ -5,6 +5,8 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from view import Ui_Dialog
 from tdms_obj_list_model import TdmsObjListModel, TdmsObj
+from treeitem import TreeItem
+from treemodel import TreeModel
 
 class ViewController(QDialog, Ui_Dialog):
     def __init__(self, parent=None):
@@ -14,11 +16,18 @@ class ViewController(QDialog, Ui_Dialog):
 
         self.outputDir = ""
 
-        self.inputListModel = TdmsObjListModel()
-        self.inputListView.setModel(self.inputListModel)
+        headers = ["Name", "Description"]
+        data = "Getting Started     How to familiarize yourself with Qt Designer"
 
-        self.outputListModel = TdmsObjListModel()
-        self.outputListView.setModel(self.outputListModel)
+        self.sorceModel = TreeModel(headers, data)
+        self.inputProxyModel = QSortFilterProxyModel(self)
+        self.inputProxyModel.setSourceModel(self.sourceModel)
+
+        self.outputProxyModel = QSortFilterProxyModel(self)
+        self.outputProxyModel.setSourceModel(self.sourceModel)
+
+        self.inputTreeView.setModel(self.inputProxyModel)
+        self.outputTreeView.setModel(self.outputProxyModel)
 
         self.addFilesButton.clicked.connect(self.addFiles)
         self.addFolderButton.clicked.connect(self.addDir)
@@ -38,7 +47,7 @@ class ViewController(QDialog, Ui_Dialog):
         if len(indexes) > 0:
             #Remove obj in reverse so it doesn't mess up the subsequent indexes
             for index in sorted(indexes, reverse=True):
-                self.inputListModel.removeRow(index.row())
+                self.inputModel.removeRow(index.row())
 
     @pyqtSlot()
     def removeFromOutput(self):
@@ -67,7 +76,7 @@ class ViewController(QDialog, Ui_Dialog):
             obj = TdmsObj(filePath)
             objs.append(item)
 
-        self.inputListModel.addTdmsObjs(objs)
+        self.inputModel.addTdmsObjs(objs)
 
     @pyqtSlot()
     def addDir(self):
@@ -91,7 +100,7 @@ class ViewController(QDialog, Ui_Dialog):
                 tdmsObj = TdmsObj(fileInfo.absoluteFilePath())
                 objs.append(tdmsObj)
 
-            self.inputListModel.addTdmsObjs(objs)
+            self.inputModel.addTdmsObjs(objs)
 
     @pyqtSlot()
     def setOutputDir(self):
@@ -113,8 +122,8 @@ class ViewController(QDialog, Ui_Dialog):
         if len(indexes) > 0:
             tdmsObjs = []
             for index in sorted(indexes, reverse=True):
-                tdmsObj = self.inputListModel.data(index, role=TdmsObjListModel.ObjRole)
-                self.inputListModel.removeRow(index.row())
+                tdmsObj = self.inputModel.data(index, role=TdmsObjListModel.ObjRole)
+                self.inputModel.removeRow(index.row())
                 tdmsObjs.append(tdmsObj)
 
             self.outputListModel.addTdmsObjs(tdmsObjs)
@@ -131,7 +140,7 @@ class ViewController(QDialog, Ui_Dialog):
                 self.outputListModel.removeRow(index.row())
                 tdmsObjs.append(tdmsObj)
 
-            self.inputListModel.addTdmsObjs(tdmsObjs)
+            self.inputModel.addTdmsObjs(tdmsObjs)
 
 
     @pyqtSlot()

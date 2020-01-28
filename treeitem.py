@@ -2,7 +2,7 @@
 # minhdao.ngoc@linamar
 
 class TreeItem(object):
-    def __init__(data, parent=None):
+    def __init__(self, data, parent=None):
         """
         Each TreeItem is constructed with a list of data and an optional parent
         """
@@ -18,13 +18,13 @@ class TreeItem(object):
             return None
         return self._childItems[number]
 
-    def childCount(self):
+    def childCount(self) -> int:
         """
         Return a total number of children
         """
         return len(self._childItems)
 
-    def childNumber(self):
+    def childNumber(self) -> int:
         """
         Get the index of the child in its parent's list of children.
         It accesses the parent's _childItems member directly to obtain this information:
@@ -34,11 +34,11 @@ class TreeItem(object):
         #The root item has no parent item. For this we return 0
         return 0
 
-    def columnCount(self):
+    def columnCount(self) -> int:
         """
         Return the number of elements in the internal _itemData list
         """
-        retrun len(self._itemData)
+        return len(self._itemData)
 
     def data(self, column):
         """
@@ -48,11 +48,40 @@ class TreeItem(object):
             return None
         return self._itemData[column]
 
-    def insertChildren(self, postion, count, columns):
-        pass
+    def setData(self, column, value) -> bool:
+        """
+        Store values in the _itemData list for valid indexes
+        """
+        if (column < 0 or column >= len(self._itemData)):
+            return False
 
-    def insertColumns(self, position, columns):
-        pass
+        self._itemData[column] = value
+        return True
+
+    def insertChildren(self, position, count, columns) -> bool:
+        """
+        Add new child into the _childItems list
+        """
+        if (position < 0 or position >= len(self._childItems)):
+            return False
+
+        for i in range(count):
+            data = []
+            item = TreeItem(data, self)
+            self._childItems.insert(position, item)
+        return True
+
+    def removeChildren(self, position, count) -> bool:
+        """
+        Remove children item from the internal list
+        """
+        if (position < 0 or position + count > len(self._childItems)):
+            return False
+
+        for i in range(count):
+            del self._childItems[position]
+
+        return True
 
     def parent(self):
         """
@@ -60,15 +89,30 @@ class TreeItem(object):
         """
         return self._parentItem
 
-    def removeChildren(self, position, count):
-        pass
 
-    def removeColumns(self, position, columns):
-        pass
+    def insertColumns(self, position, columns) -> bool:
+        """
+        This function are expected to be called on every item in the tree.
+        This is done by recursively calling this function on each child of the item
+        """
+        if (position < 0 or position > len(self._itemData)):
+            return False
 
-    def childNumber(self):
-        pass
+        for i in range(columns):
+            self._itemData.insert(position, 0)
 
-    def setData(self, column, value):
-        pass
+        for child in self._childItems:
+            child.insertColumns(position, columns)
+
+        return True
+
+    def removeColumns(self, position, columns) -> bool:
+        if (position < 0 or position + columns > len(self._itemData)):
+            return False
+
+        for i in range(columns):
+            del self._itemData[position]
+
+        for child in self._childItems:
+            child.removeColumns(position, columns)
 
