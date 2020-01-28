@@ -62,11 +62,11 @@ class TreeItem(object):
         """
         Add new child into the _childItems list
         """
-        if (position < 0 or position >= len(self._childItems)):
+        if (position < 0 or position > len(self._childItems)):
             return False
 
         for i in range(count):
-            data = []
+            data = [None] * columns
             item = TreeItem(data, self)
             self._childItems.insert(position, item)
         return True

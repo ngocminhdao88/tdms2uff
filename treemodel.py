@@ -5,7 +5,7 @@ from PyQt5.QtCore import *
 from treeitem import TreeItem
 
 class TreeModel(QAbstractItemModel):
-    def __init__(self, headers, data, parent=None) -> void:
+    def __init__(self, headers, data, parent=None) -> None:
         super(TreeModel, self).__init__(parent)
 
         rootData = []
@@ -14,7 +14,7 @@ class TreeModel(QAbstractItemModel):
 
         self._rootItem = TreeItem(rootData)
 
-        self._setupModelData(data.split('\n'), self._rootItem)
+        #self._setupModelData(data.split('\n'), self._rootItem)
 
     def _setupModelData(self, lines, parent):
         """
@@ -119,7 +119,7 @@ class TreeModel(QAbstractItemModel):
         if not index.isValid():
             return Qt.NoItemFlags
 
-        return Qt.ItemIsEditable | self.flags(index)
+        return Qt.ItemIsEditable | Qt.ItemIsSelectable | Qt.ItemIsEnabled
 
 
     def setData(self, index, value, role=Qt.EditRole) -> bool:
@@ -182,7 +182,7 @@ class TreeModel(QAbstractItemModel):
             return False
 
         self.beginRemoveRows(parent, position, position + rows - 1)
-        success parentItem.removeChildren(position, rows)
+        success = parentItem.removeChildren(position, rows)
         self.endRemoveRows()
 
         return success

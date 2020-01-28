@@ -4,7 +4,7 @@
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from view import Ui_Dialog
-from tdms_obj_list_model import TdmsObjListModel, TdmsObj
+from tdmsobj import TdmsObj
 from treeitem import TreeItem
 from treemodel import TreeModel
 
@@ -17,9 +17,10 @@ class ViewController(QDialog, Ui_Dialog):
         self.outputDir = ""
 
         headers = ["Name", "Description"]
-        data = "Getting Started     How to familiarize yourself with Qt Designer"
+        data = []
 
-        self.sorceModel = TreeModel(headers, data)
+        self.sourceModel = TreeModel(headers, data)
+
         self.inputProxyModel = QSortFilterProxyModel(self)
         self.inputProxyModel.setSourceModel(self.sourceModel)
 
@@ -27,12 +28,16 @@ class ViewController(QDialog, Ui_Dialog):
         self.outputProxyModel.setSourceModel(self.sourceModel)
 
         self.inputTreeView.setModel(self.inputProxyModel)
+        self.inputTreeView.setColumnHidden(1, True) # only show file name in input
+        self.channelsTreeView.setModel(self.inputProxyModel)
         self.outputTreeView.setModel(self.outputProxyModel)
+
+        self.inputFilterEdit.textChanged.connect(self.inputProxyModel.setFilterRegExp)
 
         self.addFilesButton.clicked.connect(self.addFiles)
         self.addFolderButton.clicked.connect(self.addDir)
         self.removeFromInputButton.clicked.connect(self.removeFromInput)
-        self.addToOutputQueueButton.clicked.connect(self.addToOutputQueue)
+        self.addToOutputButton.clicked.connect(self.addToOutputQueue)
 
         self.setOutputFolderButton.clicked.connect(self.setOutputDir)
         self.convertButton.clicked.connect(self.runOutputQueue)
@@ -70,13 +75,20 @@ class ViewController(QDialog, Ui_Dialog):
 
         #extract only the file path
         filePaths = filePaths[0]
-        objs = []
 
         for filePath in filePaths:
-            obj = TdmsObj(filePath)
-            objs.append(item)
+            fileInfo = QFileInfo(filePath)
+            fileName = fileInfo.fileName()
 
-        self.inputModel.addTdmsObjs(objs)
+            index = self.inputTreeView.selectionModel().currentIndex()
+            model = self.inputTreeView.model()
+
+            if not model.insertRow(index.row() + 1, index.parent()):
+                return
+
+            for column in range(model.columnCount(index.parent())):
+                child = model.index(index.row() + 1, column, index.parent())
+                model.setData(child, fileName)
 
     @pyqtSlot()
     def addDir(self):
