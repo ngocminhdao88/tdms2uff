@@ -30,7 +30,7 @@ class TreeItem(object):
         It accesses the parent's _childItems member directly to obtain this information:
         """
         if (self._parentItem):
-            return self._parentItem.index(self)
+            return self._parentItem._childItems.index(self)
         #The root item has no parent item. For this we return 0
         return 0
 

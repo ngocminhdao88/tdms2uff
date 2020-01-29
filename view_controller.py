@@ -16,7 +16,7 @@ class ViewController(QDialog, Ui_Dialog):
 
         self.outputDir = ""
 
-        headers = ["Name", "Description"]
+        headers = ["Name", "Type", "Unit", "Description"]
         data = []
 
         self.sourceModel = TreeModel(headers, data)
@@ -29,6 +29,9 @@ class ViewController(QDialog, Ui_Dialog):
 
         self.inputTreeView.setModel(self.inputProxyModel)
         self.inputTreeView.setColumnHidden(1, True) # only show file name in input
+        self.inputTreeView.clicked.connect(self.inputFileClicked)
+
+
         self.channelsTreeView.setModel(self.inputProxyModel)
         self.outputTreeView.setModel(self.outputProxyModel)
 
@@ -45,24 +48,26 @@ class ViewController(QDialog, Ui_Dialog):
         self.backToInputButton.clicked.connect(self.backToInput)
 
     @pyqtSlot()
+    def inputFileClicked(self, index=QModelIndex):
+        #Update the channelsTreeView to the selected item in the inputTreeView
+        pass
+
+    @pyqtSlot()
     def removeFromInput(self):
         #Remove input files
-        indexes = self.inputListView.selectedIndexes()
+        indexes = self.inputTreeView.selectedIndexes()
 
         if len(indexes) > 0:
             #Remove obj in reverse so it doesn't mess up the subsequent indexes
             for index in sorted(indexes, reverse=True):
-                self.inputModel.removeRow(index.row())
+                sourceModel = self.inputProxyModel.sourceModel()
+                sourceIndex = self.inputProxyModel.mapToSource(index)
+                sourceModel.removeRow(sourceIndex.row())
 
     @pyqtSlot()
     def removeFromOutput(self):
         #Remove output files
-        indexes = self.outputListView.selectedIndexes()
-
-        if len(indexes) > 0:
-            #Remove obj in reverse so it doesn't mess up the subsequent indexes
-            for index in sorted(indexes, reverse=True):
-                self.outputListModel.removeRow(index.row())
+        pass
 
     @pyqtSlot()
     def addFiles(self):
@@ -79,16 +84,38 @@ class ViewController(QDialog, Ui_Dialog):
         for filePath in filePaths:
             fileInfo = QFileInfo(filePath)
             fileName = fileInfo.fileName()
+            tdmsObj = TdmsObj(filePath)
+            print(tdmsObj.channels())
 
-            index = self.inputTreeView.selectionModel().currentIndex()
-            model = self.inputTreeView.model()
-
+            """
             if not model.insertRow(index.row() + 1, index.parent()):
                 return
 
-            for column in range(model.columnCount(index.parent())):
-                child = model.index(index.row() + 1, column, index.parent())
-                model.setData(child, fileName)
+            nameIndex = model.index(index.row() + 1, 0, index.parent())
+            model.setData(nameIndex, fileName)
+
+            if not model.insertRow(0, nameIndex):
+                return
+            pathIndex = model.index(0, 0, nameIndex)
+            model.setData(pathIndex, filePath)
+
+            if not model.insertRow(0, nameIndex):
+                return
+            propertyIndex = model.index(0, 0, nameIndex)
+            self.channelsTreeView.setRootIndex(propertyIndex)
+            model.setData(propertyIndex, "properties")
+
+            if not model.insertRow(0, propertyIndex):
+                return
+            subPropertyIndex = model.index(0, 0, propertyIndex)
+            model.setData(subPropertyIndex, "tacho")
+            subPropertyIndex = model.index(0, 1, propertyIndex)
+            model.setData(subPropertyIndex, 21)
+            subPropertyIndex = model.index(0, 2, propertyIndex)
+            model.setData(subPropertyIndex, "V")
+            subPropertyIndex = model.index(0, 3, propertyIndex)
+            model.setData(subPropertyIndex, "Voltage")
+            """
 
     @pyqtSlot()
     def addDir(self):

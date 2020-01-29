@@ -2,6 +2,7 @@
 # minhdao.ngoc@linamar.com
 
 from PyQt5.QtCore import QFileInfo
+from nptdms import TdmsFile
 
 class TdmsObj(object):
     """
@@ -10,7 +11,8 @@ class TdmsObj(object):
     def __init__(self, path):
         self.m_path = path
         self._getFileName()
-        self.m_channels = [[]] # name, type, unit
+        # name, type, unit
+        self.m_channels = self._getChannelInfo()
 
     def name(self):
         #Return the name of tdms file
@@ -50,3 +52,29 @@ class TdmsObj(object):
         #Get base file name from a absolute path
         fileInfo = QFileInfo(self.m_path)
         self.m_name = fileInfo.fileName()
+
+    def _getChannelInfo(self) -> [str]:
+        #Get channel's informations from tdms file
+        tdms = TdmsFile(self.m_path)
+        group = tdms.groups()[0] #There is only one data group in TdmsFile
+        chnObjs = tdms.group_channels(group)
+
+        chnInfos = []
+        for chnObj in chnObjs:
+            properties = chnObj.properties
+
+            chnName = chnObj.channel
+
+            try:
+                chnUnit = properties['NI_UnitDescription']
+            except KeyError:
+                chnUnit = "NoUnit"
+
+            #TODO: Mapping Unit to channel type (need a list from Julian)
+            chnType = 0
+
+            chnInfo = [chnName, chnType, chnUnit]
+
+            chnInfos.append(chnInfo)
+        return chnInfos
+

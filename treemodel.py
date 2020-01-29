@@ -5,6 +5,10 @@ from PyQt5.QtCore import *
 from treeitem import TreeItem
 
 class TreeModel(QAbstractItemModel):
+    #Roles to filter input and output view
+    Input_Role = Qt.UserRole
+    Output_Role = Qt.UserRole + 1
+
     def __init__(self, headers, data, parent=None) -> None:
         super(TreeModel, self).__init__(parent)
 
