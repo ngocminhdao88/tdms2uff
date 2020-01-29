@@ -48,6 +48,12 @@ class TdmsObj(object):
             return
         return self.m_channels[row][2]
 
+    def channelUnitDesc(self, row):
+        #Return channel's unit description at row
+        if row < 0 or row >= len(self.m_channels):
+            return
+        return self.m_channels[row][3]
+
     def _getFileName(self):
         #Get base file name from a absolute path
         fileInfo = QFileInfo(self.m_path)
@@ -65,15 +71,18 @@ class TdmsObj(object):
 
             chnName = chnObj.channel
 
+            chnType = 0
+
             try:
                 chnUnit = properties['NI_UnitDescription']
             except KeyError:
                 chnUnit = "NoUnit"
 
             #TODO: Mapping Unit to channel type (need a list from Julian)
-            chnType = 0
 
-            chnInfo = [chnName, chnType, chnUnit]
+            chnUnitDesc = "NoDesc"
+
+            chnInfo = [chnName, chnType, chnUnit, chnUnitDesc]
 
             chnInfos.append(chnInfo)
         return chnInfos

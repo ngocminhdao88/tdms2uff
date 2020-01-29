@@ -116,3 +116,25 @@ class TreeItem(object):
         for child in self._childItems:
             child.removeColumns(position, columns)
 
+    def _log(self, tabLevel=-1):
+        """
+        Printout the tree structure
+        """
+        output = ""
+        tabLevel += 1
+
+        for i in range(tabLevel):
+            output += '\t'
+
+        output += "|- " + self._itemData[0] + '\n'
+
+        for childItem in self._childItems:
+            output += childItem._log(tabLevel)
+
+        tabLevel -= 1
+
+        return output
+
+    def __repr__(self):
+        return self._log()
+

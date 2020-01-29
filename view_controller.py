@@ -27,13 +27,11 @@ class ViewController(QDialog, Ui_Dialog):
         self.outputProxyModel = QSortFilterProxyModel(self)
         self.outputProxyModel.setSourceModel(self.sourceModel)
 
-        self.inputTreeView.setModel(self.inputProxyModel)
-        self.inputTreeView.setColumnHidden(1, True) # only show file name in input
-        self.inputTreeView.clicked.connect(self.inputFileClicked)
-
+        self.inputListView.setModel(self.inputProxyModel)
+        self.inputListView.clicked.connect(self.updateChannelsTreeView)
 
         self.channelsTreeView.setModel(self.inputProxyModel)
-        self.outputTreeView.setModel(self.outputProxyModel)
+        self.outputListView.setModel(self.outputProxyModel)
 
         self.inputFilterEdit.textChanged.connect(self.inputProxyModel.setFilterRegExp)
 
@@ -47,22 +45,33 @@ class ViewController(QDialog, Ui_Dialog):
         self.removeFromOutputButton.clicked.connect(self.removeFromOutput)
         self.backToInputButton.clicked.connect(self.backToInput)
 
-    @pyqtSlot()
-    def inputFileClicked(self, index=QModelIndex):
-        #Update the channelsTreeView to the selected item in the inputTreeView
-        pass
+    @pyqtSlot(QModelIndex)
+    def updateChannelsTreeView(self, index):
+        #Show all channels of selected input file
+        if not index.isValid():
+            return
+
+        model = index.model() #proxymodel
+        sourceModel = model.sourceModel()
+        sourceIndex = model.mapToSource(index)
+        propertyIndex = sourceModel.index(1, 0, sourceIndex)
+
+        #TODO: not working when input are filtered
+        proxyIndex = model.mapFromSource(propertyIndex)
+        self.channelsTreeView.setRootIndex(proxyIndex)
 
     @pyqtSlot()
     def removeFromInput(self):
-        #Remove input files
-        indexes = self.inputTreeView.selectedIndexes()
+        #Remove selected items from input list view
+        indexes = self.inputListView.selectedIndexes()
+        model = self.inputListView.model() #proxymodel
+        sourceModel = model.sourceModel()
 
         if len(indexes) > 0:
             #Remove obj in reverse so it doesn't mess up the subsequent indexes
             for index in sorted(indexes, reverse=True):
-                sourceModel = self.inputProxyModel.sourceModel()
-                sourceIndex = self.inputProxyModel.mapToSource(index)
-                sourceModel.removeRow(sourceIndex.row())
+                sourceIndex = model.mapToSource(index)
+                sourceModel.removeRow(sourceIndex.row(), sourceIndex.parent())
 
     @pyqtSlot()
     def removeFromOutput(self):
@@ -85,37 +94,69 @@ class ViewController(QDialog, Ui_Dialog):
             fileInfo = QFileInfo(filePath)
             fileName = fileInfo.fileName()
             tdmsObj = TdmsObj(filePath)
-            print(tdmsObj.channels())
+            #print(tdmsObj.channels())
+
+            #index = self.inputListView.selectionModel().currentIndex()
+            model = self.inputListView.model()
+            sourceModel = model.sourceModel()
+            #sourceIndex = model.mapToSource(index)
 
             """
-            if not model.insertRow(index.row() + 1, index.parent()):
+            if not sourceModel.insertRow(sourceIndex.row() + 1, sourceIndex.parent()):
                 return
+            childIndex = sourceModel.index(sourceIndex.row() + 1, 0, sourceIndex.parent())
+            sourceModel.setData(childIndex, fileName)
 
-            nameIndex = model.index(index.row() + 1, 0, index.parent())
-            model.setData(nameIndex, fileName)
-
-            if not model.insertRow(0, nameIndex):
+            if not sourceModel.insertRows(0, 2, childIndex):
                 return
-            pathIndex = model.index(0, 0, nameIndex)
-            model.setData(pathIndex, filePath)
+            child = sourceModel.index(0, 0, childIndex)
+            sourceModel.setData(child, filePath)
+            child = sourceModel.index(1, 0, childIndex)
+            sourceModel.setData(child, "properties")
 
-            if not model.insertRow(0, nameIndex):
+            if not sourceModel.insertRow(0, child):
                 return
-            propertyIndex = model.index(0, 0, nameIndex)
-            self.channelsTreeView.setRootIndex(propertyIndex)
-            model.setData(propertyIndex, "properties")
-
-            if not model.insertRow(0, propertyIndex):
-                return
-            subPropertyIndex = model.index(0, 0, propertyIndex)
-            model.setData(subPropertyIndex, "tacho")
-            subPropertyIndex = model.index(0, 1, propertyIndex)
-            model.setData(subPropertyIndex, 21)
-            subPropertyIndex = model.index(0, 2, propertyIndex)
-            model.setData(subPropertyIndex, "V")
-            subPropertyIndex = model.index(0, 3, propertyIndex)
-            model.setData(subPropertyIndex, "Voltage")
+            propertyIndex = sourceModel.index(0, 0, child)
+            sourceModel.setData(propertyIndex, "tacho")
+            propertyIndex = sourceModel.index(0, 1, child)
+            sourceModel.setData(propertyIndex, 21)
+            propertyIndex = sourceModel.index(0, 2, child)
+            sourceModel.setData(propertyIndex, "V")
+            propertyIndex = sourceModel.index(0, 3, child)
+            sourceModel.setData(propertyIndex, "Voltage")
             """
+
+            #item = sourceModel.getItem(sourceIndex)
+            item = sourceModel.rootItem() #rootitem
+            sourceModel.layoutAboutToBeChanged.emit() #start changing model layout
+
+            item.insertChildren(0, 1, 4) #fileName item
+            item = item.child(0) #filename
+            item.setData(0, fileName)
+
+
+            item.insertChildren(0, 2, 4)
+            pathItem = item.child(0)
+            pathItem.setData(0, filePath)
+
+            propertyItem = item.child(1)
+            propertyItem.setData(0, "properties")
+
+            chnNum = tdmsObj.channelCount()
+            propertyItem.insertChildren(0, chnNum, 4)
+
+            for i in range(chnNum):
+                subPropertyItem = propertyItem.child(i)
+
+                subPropertyItem.setData(0, tdmsObj.channelName(i))
+                subPropertyItem.setData(1, tdmsObj.channelType(i))
+                subPropertyItem.setData(2, tdmsObj.channelUnit(i))
+                subPropertyItem.setData(3, tdmsObj.channelUnitDesc(i))
+
+            sourceModel.layoutChanged.emit() #end changing model layout
+
+            print(item) #printout roottree model
+
 
     @pyqtSlot()
     def addDir(self):

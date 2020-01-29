@@ -26,6 +26,12 @@ class TreeModel(QAbstractItemModel):
         """
         pass
 
+    def rootItem(self) -> TreeItem:
+        """
+        Return the root item of this model
+        """
+        return self._rootItem
+
     def getItem(self, index) -> TreeItem:
         """
         Return the TreeItem from model using the index
