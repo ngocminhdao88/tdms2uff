@@ -1,35 +1,35 @@
 {
     "unknown":{
         "number":0,
-        "unit": "unknown"},
+        "unit_desc": "unknown"},
     "general":{
         "number":1,
-        "unit": "general"},
+        "unit_desc": "general"},
     "C":{
         "number":5,
-        "unit": "temperature"},
+        "unit_desc": "temperature"},
     "m/s":{
         "number":11,
-        "unit": "velocitiy"},
+        "unit_desc": "velocitiy"},
     "m/s^2":{
         "number":12,
-        "unit": "acceleration"},
+        "unit_desc": "acceleration"},
     "Pa":{
         "number":15,
-        "unit": "pressure"},
+        "unit_desc": "pressure"},
     "kg":{
         "number":16,
-        "unit": "mass"},
+        "unit_desc": "mass"},
     "s":{
         "number":17,
-        "unit": "time"},
+        "unit_desc": "time"},
     "Hz":{
         "number":18,
-        "unit": "frequency"},
+        "unit_desc": "frequency"},
     "1/min":{
         "number":19,
-        "unit": "rpm"},
+        "unit_desc": "rpm"},
     "Pa":{"number":21,
-          "unit": "sound pressure"},
+          "unit_desc": "sound pressure"},
     "W":{"number":23,
-         "unit": "sound power"}}
+         "unit_desc": "sound power"}}

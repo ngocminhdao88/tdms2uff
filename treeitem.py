@@ -10,6 +10,12 @@ class TreeItem(object):
         self._itemData = data #list
         self._parentItem = parent
 
+        if parent is not None:
+            parent.addChild(self)
+
+    def typeInfo(self):
+        return "Item"
+
     def child(self, number):
         """
         Return a specific child from the internal list of children
@@ -58,6 +64,12 @@ class TreeItem(object):
         self._itemData[column] = value
         return True
 
+    def addChild(self, child) -> None:
+        """
+        Add a child into _childItems
+        """
+        self._childItems.append(child)
+
     def insertChildren(self, position, count, columns) -> bool:
         """
         Add new child into the _childItems list
@@ -79,7 +91,8 @@ class TreeItem(object):
             return False
 
         for i in range(count):
-            del self._childItems[position]
+            child = self._childItems.pop(position)
+            child.setParent(None)
 
         return True
 
@@ -144,3 +157,24 @@ class TreeItem(object):
     def __repr__(self):
         return self._log()
 
+
+class NameItem(TreeItem):
+    def __init__(self, data, parent=None):
+        super(NameItem, self).__init__(data, parent)
+
+    def typeInfo(self):
+        return "NameItem"
+
+class PathItem(TreeItem):
+    def __init__(self, data, parent=None):
+        super(PathItem, self).__init__(data, parent)
+
+    def typeInfo(self):
+        return "PathItem"
+
+class PropertyItem(TreeItem):
+    def __init__(self, data, parent=None):
+        super(PropertyItem, self).__init__(data, parent)
+
+    def typeInfo(self):
+        return "PropertyItem"

@@ -1,7 +1,7 @@
 # Ngoc Minh Dao
 # minhdao.ngoc@linamar.com
 
-from treeitem import TreeItem
+from treeitem import TreeItem, NameItem, PathItem, PropertyItem
 from tdmsobj import TdmsObj
 
 class TdmsTreeItemConverter(object):
@@ -27,24 +27,12 @@ class TdmsTreeItemConverter(object):
         data = [None] * columns
         for i in range(columns):
             data[i] = tdmsObj.name()
-        nameItem = TreeItem(data)
+        nameItem = NameItem(data)
 
-        nameItem.insertChildren(0, 2, columns)
+        pathItem = PathItem([tdmsObj.path()], nameItem)
 
-        pathItem = nameItem.child(0)
-        pathItem.setData(0, tdmsObj.path())
-
-        proItem = nameItem.child(1)
-        proItem.setData(0, "properties")
-
-        proItem.insertChildren(0, tdmsObj.channelsCount(), tdmsObj.channelLength())
-
-        for i in range(tdmsObj.channelsCount()):
-            item = proItem.child(i)
-
-            item.setData(0, tdmsObj.channelName(i))
-            item.setData(1, tdmsObj.channelType(i))
-            item.setData(2, tdmsObj.channelUnit(i))
-            item.setData(3, tdmsObj.channelUnitDesc(i))
+        #for i in range(tdmsObj.channelsCount()):
+        for chn in tdmsObj.channels():
+            propertyItem = PropertyItem(chn, nameItem)
 
         return nameItem

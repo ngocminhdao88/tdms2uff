@@ -4,6 +4,7 @@
 from PyQt5.QtCore import QFileInfo
 from nptdms import TdmsFile
 from treeitem import TreeItem
+import json
 
 class TdmsObj(object):
     """
@@ -70,6 +71,12 @@ class TdmsObj(object):
 
     def _getChannelInfo(self) -> [str]:
         #Get channel's informations from tdms file
+
+        #load units from units.json file
+        f = open("units.json", 'r')
+        units = json.load(f)
+        f.close()
+
         tdms = TdmsFile(self.m_path)
         group = tdms.groups()[0] #There is only one data group in TdmsFile
         chnObjs = tdms.group_channels(group)
@@ -80,16 +87,19 @@ class TdmsObj(object):
 
             chnName = chnObj.channel
 
-            chnType = 0
-
             try:
                 chnUnit = properties['NI_UnitDescription']
             except KeyError:
-                chnUnit = "NoUnit"
+                chnUnit = "unknown"
 
             #TODO: Mapping Unit to channel type (need a list from Julian)
 
-            chnUnitDesc = "NoDesc"
+            try:
+                chnType = units[chnUnit]["number"]
+                chnUnitDesc = units[chnUnit]["unit_desc"]
+            except KeyError:
+                chnType = 0
+                chnUnitDesc = "unknown"
 
             chnInfo = [chnName, chnType, chnUnit, chnUnitDesc]
 
