@@ -1,0 +1,35 @@
+{
+    "unknown":{
+        "number":0,
+        "unit": "unknown"},
+    "general":{
+        "number":1,
+        "unit": "general"},
+    "C":{
+        "number":5,
+        "unit": "temperature"},
+    "m/s":{
+        "number":11,
+        "unit": "velocitiy"},
+    "m/s^2":{
+        "number":12,
+        "unit": "acceleration"},
+    "Pa":{
+        "number":15,
+        "unit": "pressure"},
+    "kg":{
+        "number":16,
+        "unit": "mass"},
+    "s":{
+        "number":17,
+        "unit": "time"},
+    "Hz":{
+        "number":18,
+        "unit": "frequency"},
+    "1/min":{
+        "number":19,
+        "unit": "rpm"},
+    "Pa":{"number":21,
+          "unit": "sound pressure"},
+    "W":{"number":23,
+         "unit": "sound power"}}

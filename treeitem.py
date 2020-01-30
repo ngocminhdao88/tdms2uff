@@ -89,6 +89,12 @@ class TreeItem(object):
         """
         return self._parentItem
 
+    def setParent(self, parent=None):
+        """
+        Set the parent to this TreeItem
+        """
+        self._parentItem = parent
+
 
     def insertColumns(self, position, columns) -> bool:
         """
@@ -116,7 +122,7 @@ class TreeItem(object):
         for child in self._childItems:
             child.removeColumns(position, columns)
 
-    def _log(self, tabLevel=-1):
+    def _log(self, tabLevel=-1) -> str:
         """
         Printout the tree structure
         """

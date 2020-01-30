@@ -3,6 +3,7 @@
 
 from PyQt5.QtCore import QFileInfo
 from nptdms import TdmsFile
+from treeitem import TreeItem
 
 class TdmsObj(object):
     """
@@ -22,9 +23,17 @@ class TdmsObj(object):
         #Return the absolute path of tdms file
         return self.m_path
 
-    def channelCount(self):
+    def channelsCount(self):
         #Return number of channels this item has
         return len(self.m_channels)
+
+    def channelLength(self):
+        """
+        Return the length of a channel
+        """
+        if len(self.m_channels) > 0:
+            return len(self.m_channels[0])
+        return 0
 
     def channels(self):
         #Return channels of this tdms file
@@ -86,4 +95,3 @@ class TdmsObj(object):
 
             chnInfos.append(chnInfo)
         return chnInfos
-
