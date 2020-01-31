@@ -78,8 +78,10 @@ class TreeItem(object):
 
     def addChild(self, child) -> None:
         """
-        Add a child into _childItems
+        Add a child into _childItems list
         """
+        if child in self._childItems:
+            return
         self._childItems.append(child)
 
     def insertChildren(self, position, count, columns) -> bool:
@@ -118,8 +120,8 @@ class TreeItem(object):
         """
         Set the parent to this TreeItem
         """
-        self._parentItem = parent
-
+        if parent != self._parentItem:
+            self._parentItem = parent
 
     def insertColumns(self, position, columns) -> bool:
         """

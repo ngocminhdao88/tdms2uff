@@ -20,12 +20,6 @@ class TreeModel(QAbstractItemModel):
 
         #self._setupModelData(data.split('\n'), self._rootItem)
 
-    def _setupModelData(self, lines, parent):
-        """
-        Initiate datas for the model
-        """
-        pass
-
     def rootItem(self) -> TreeItem:
         """
         Return the root item of this model
@@ -159,6 +153,9 @@ class TreeModel(QAbstractItemModel):
         return result
 
     def insertColumns(self, position, columns, parent=QModelIndex()) -> bool:
+        """
+        Insert columns into the model
+        """
         self.beginInsertColumns(parent, position, position + columns - 1)
         success = self._rootItem.insertColumns(position, columns)
         self.endInsertColumns()
@@ -166,6 +163,9 @@ class TreeModel(QAbstractItemModel):
         return success
 
     def removeColumns(self, position, columns, parent=QModelIndex()) -> bool:
+        """
+        Remove columns from the model
+        """
         self.beginRemoveColumns(parent, position, position + columns - 1)
         success = self._rootItem.removeColumns(position, columns)
         self.endRemoveColumns()
@@ -176,6 +176,9 @@ class TreeModel(QAbstractItemModel):
         return success
 
     def insertRows(self, position, rows, parent=QModelIndex()) -> bool:
+        """
+        Insert rows into model
+        """
         parentItem = self.getItem(parent)
         if not parentItem:
             return False
@@ -187,6 +190,9 @@ class TreeModel(QAbstractItemModel):
         return success
 
     def removeRows(self, position, rows, parent=QModelIndex()) -> bool:
+        """
+        Remove rows from model
+        """
         parentItem = self.getItem(parent)
         if not parentItem:
             return False

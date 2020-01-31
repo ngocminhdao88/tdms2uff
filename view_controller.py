@@ -116,23 +116,6 @@ class ViewController(QDialog, Ui_Dialog):
             worker.signals.result.connect(self.updateSourceModel)
 
             self._threadPool.start(worker)
-            """
-            fileInfo = QFileInfo(filePath)
-            fileName = fileInfo.fileName()
-            tdmsObj = TdmsObj(filePath)
-            #print(tdmsObj.channels())
-
-            #index = self.inputListView.selectionModel().currentIndex()
-            model = self.inputListView.model()
-            sourceModel = model.sourceModel()
-            #sourceIndex = model.mapToSource(index)
-
-            sourceModel.layoutAboutToBeChanged.emit() #start changing model layout
-
-            item = converter.toTreeItem(tdmsObj, 4, sourceModel.rootItem())
-
-            sourceModel.layoutChanged.emit() #end changing model layout
-            """
 
     @pyqtSlot()
     def addDir(self):
