@@ -112,10 +112,16 @@ class ViewController(QDialog, Ui_Dialog):
         converter = TdmsTreeItemConverter()
 
         for filePath in filePaths:
-            worker = TdmsImportWorker(filePath)
-            worker.signals.result.connect(self.updateSourceModel)
+            self._addFile(filePath)
 
-            self._threadPool.start(worker)
+    def _addFile(self, filePath):
+        """
+        Start a TdmsImportWorker thread to import big tdms file
+        """
+        worker = TdmsImportWorker(filePath)
+        worker.signals.result.connect(self.updateSourceModel)
+
+        self._threadPool.start(worker)
 
     @pyqtSlot()
     def addDir(self):
@@ -133,13 +139,9 @@ class ViewController(QDialog, Ui_Dialog):
                     ["*.tdms"],
                     QDir.Files)
 
-            objs = []
-
             for fileInfo in entryInfoList:
-                tdmsObj = TdmsObj(fileInfo.absoluteFilePath())
-                objs.append(tdmsObj)
-
-            self.inputModel.addTdmsObjs(objs)
+                filePath = fileInfo.absoluteFilePath()
+                self._addFile(filePath)
 
     @pyqtSlot()
     def setOutputDir(self):

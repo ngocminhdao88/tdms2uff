@@ -80,13 +80,18 @@ class TreeItem(object):
         """
         Add a child into _childItems list
         """
+        if not child:
+            return
+
         if child in self._childItems:
             return
         self._childItems.append(child)
+        child.setParent(self)
 
     def insertChildren(self, position, count, columns) -> bool:
         """
         Add new child into the _childItems list
+
         """
         if (position < 0 or position > len(self._childItems)):
             return False
