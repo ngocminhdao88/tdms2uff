@@ -24,6 +24,12 @@ class TreeItem(object):
             return None
         return self._childItems[number]
 
+    def children(self):
+        """
+        Return all the children this item has
+        """
+        return self._childItems
+
     def childCount(self) -> int:
         """
         Return a total number of children
@@ -63,6 +69,12 @@ class TreeItem(object):
 
         self._itemData[column] = value
         return True
+
+    def itemData(self) -> [object]:
+        """
+        Return the _itemData of this node
+        """
+        return self._itemData
 
     def addChild(self, child) -> None:
         """
@@ -158,23 +170,16 @@ class TreeItem(object):
         return self._log()
 
 
-class NameItem(TreeItem):
+class DataSetItem(TreeItem):
     def __init__(self, data, parent=None):
-        super(NameItem, self).__init__(data, parent)
+        super(DataSetItem, self).__init__(data, parent)
 
     def typeInfo(self):
-        return "NameItem"
+        return "DataSetItem"
 
-class PathItem(TreeItem):
+class ChannelItem(TreeItem):
     def __init__(self, data, parent=None):
-        super(PathItem, self).__init__(data, parent)
+        super(ChannelItem, self).__init__(data, parent)
 
     def typeInfo(self):
-        return "PathItem"
-
-class PropertyItem(TreeItem):
-    def __init__(self, data, parent=None):
-        super(PropertyItem, self).__init__(data, parent)
-
-    def typeInfo(self):
-        return "PropertyItem"
+        return "ChannelItem"

@@ -10,66 +10,85 @@ class TdmsObj(object):
     """
     Holding informations of the tdms file
     """
-    def __init__(self, path):
-        self.m_path = path
-        self._getFileName()
+    def __init__(self, path=""):
+        self._path = path
+        self._name = self._getFileName()
         # name, type, unit
-        self.m_channels = self._getChannelInfo()
+        self._channels = self._getChannelInfo()
 
     def name(self):
         #Return the name of tdms file
-        return self.m_name
+        return self._name
 
     def path(self):
         #Return the absolute path of tdms file
-        return self.m_path
+        return self._path
+
+    def setPath(self, path):
+        """
+        Set the path to tdms file
+        """
+        if self._path != path:
+            self._path = path
+            self._name = self._getFileName()
 
     def channelsCount(self):
         #Return number of channels this item has
-        return len(self.m_channels)
+        return len(self._channels)
 
     def channelLength(self):
         """
         Return the length of a channel
         """
-        if len(self.m_channels) > 0:
-            return len(self.m_channels[0])
+        if len(self._channels) > 0:
+            return len(self._channels[0])
         return 0
 
     def channels(self):
         #Return channels of this tdms file
-        return self.m_channels
+        return self._channels
+
+    def setChannels(self, channels):
+        """
+        Set the channels for this tdms object
+        """
+        if channels != self._channels:
+            self._channels = channels
 
     def channelName(self, row):
         #Return channel's name at row
-        if row < 0 or row >= len(self.m_channels):
+        if row < 0 or row >= len(self._channels):
             return
-        return self.m_channels[row][0]
+        return self._channels[row][0]
 
     def channelType(self, row):
         #Return channel's type at row
-        if row < 0 or row >= len(self.m_channels):
+        if row < 0 or row >= len(self._channels):
             return
-        return self.m_channels[row][1]
+        return self._channels[row][1]
 
     def channelUnit(self, row):
         #Return channel's unit at row
-        if row < 0 or row >= len(self.m_channels):
+        if row < 0 or row >= len(self._channels):
             return
-        return self.m_channels[row][2]
+        return self._channels[row][2]
 
     def channelUnitDesc(self, row):
         #Return channel's unit description at row
-        if row < 0 or row >= len(self.m_channels):
+        if row < 0 or row >= len(self._channels):
             return
-        return self.m_channels[row][3]
+        return self._channels[row][3]
 
-    def _getFileName(self):
+    def _getFileName(self) -> str:
         #Get base file name from a absolute path
-        fileInfo = QFileInfo(self.m_path)
-        self.m_name = fileInfo.fileName()
+        fileInfo = QFileInfo(self._path)
 
-    def _getChannelInfo(self) -> [str]:
+        if not fileInfo.exists():
+            return ""
+        else:
+            return fileInfo.fileName()
+
+    def _getChannelInfo(self) -> [[object]]:
         #Get channel's informations from tdms file
 
         #load units from units.json file
@@ -77,7 +96,11 @@ class TdmsObj(object):
         units = json.load(f)
         f.close()
 
-        tdms = TdmsFile(self.m_path)
+        fileInfo = QFileInfo(self._path)
+        if not fileInfo.exists():
+            return [[]]
+
+        tdms = TdmsFile(self._path)
         group = tdms.groups()[0] #There is only one data group in TdmsFile
         chnObjs = tdms.group_channels(group)
 
@@ -91,8 +114,6 @@ class TdmsObj(object):
                 chnUnit = properties['NI_UnitDescription']
             except KeyError:
                 chnUnit = "unknown"
-
-            #TODO: Mapping Unit to channel type (need a list from Julian)
 
             try:
                 chnType = units[chnUnit]["number"]

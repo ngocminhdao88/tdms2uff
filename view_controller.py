@@ -7,6 +7,8 @@ from view import Ui_Dialog
 from tdmsobj import TdmsObj
 from treeitem import TreeItem
 from treemodel import TreeModel
+from converter import TdmsTreeItemConverter
+from worker import TdmsUffWorker, TdmsImportWorker
 
 class ViewController(QDialog, Ui_Dialog):
     def __init__(self, parent=None):
@@ -15,6 +17,8 @@ class ViewController(QDialog, Ui_Dialog):
         self.setupUi(self)
 
         self.outputDir = ""
+
+        self._threadPool = QThreadPool() #manage worker objects
 
         headers = ["Name", "Type", "Unit", "Description"]
         data = []
@@ -51,13 +55,13 @@ class ViewController(QDialog, Ui_Dialog):
         if not index.isValid():
             return
 
+        #TODO: not working when input is filterd
+
         model = index.model() #proxymodel
         sourceModel = model.sourceModel()
         sourceIndex = model.mapToSource(index)
-        propertyIndex = sourceModel.index(1, 0, sourceIndex)
 
-        #TODO: not working when input are filtered
-        proxyIndex = model.mapFromSource(propertyIndex)
+        proxyIndex = model.mapFromSource(sourceIndex)
         self.channelsTreeView.setRootIndex(proxyIndex)
 
     @pyqtSlot()
@@ -72,6 +76,22 @@ class ViewController(QDialog, Ui_Dialog):
             for index in sorted(indexes, reverse=True):
                 sourceIndex = model.mapToSource(index)
                 sourceModel.removeRow(sourceIndex.row(), sourceIndex.parent())
+
+    @pyqtSlot(object)
+    def updateSourceModel(self, obj):
+        """
+        Update the source model
+        """
+        if not obj:
+            return
+
+        proxyModel = self.inputListView.model()
+        sourceModel = proxyModel.sourceModel()
+        rootItem = sourceModel.rootItem()
+
+        sourceModel.layoutAboutToBeChanged.emit()
+        rootItem.addChild(obj)
+        sourceModel.layoutChanged.emit()
 
     @pyqtSlot()
     def removeFromOutput(self):
@@ -89,8 +109,14 @@ class ViewController(QDialog, Ui_Dialog):
 
         #extract only the file path
         filePaths = filePaths[0]
+        converter = TdmsTreeItemConverter()
 
         for filePath in filePaths:
+            worker = TdmsImportWorker(filePath)
+            worker.signals.result.connect(self.updateSourceModel)
+
+            self._threadPool.start(worker)
+            """
             fileInfo = QFileInfo(filePath)
             fileName = fileInfo.fileName()
             tdmsObj = TdmsObj(filePath)
@@ -101,62 +127,12 @@ class ViewController(QDialog, Ui_Dialog):
             sourceModel = model.sourceModel()
             #sourceIndex = model.mapToSource(index)
 
-            """
-            if not sourceModel.insertRow(sourceIndex.row() + 1, sourceIndex.parent()):
-                return
-            childIndex = sourceModel.index(sourceIndex.row() + 1, 0, sourceIndex.parent())
-            sourceModel.setData(childIndex, fileName)
-
-            if not sourceModel.insertRows(0, 2, childIndex):
-                return
-            child = sourceModel.index(0, 0, childIndex)
-            sourceModel.setData(child, filePath)
-            child = sourceModel.index(1, 0, childIndex)
-            sourceModel.setData(child, "properties")
-
-            if not sourceModel.insertRow(0, child):
-                return
-            propertyIndex = sourceModel.index(0, 0, child)
-            sourceModel.setData(propertyIndex, "tacho")
-            propertyIndex = sourceModel.index(0, 1, child)
-            sourceModel.setData(propertyIndex, 21)
-            propertyIndex = sourceModel.index(0, 2, child)
-            sourceModel.setData(propertyIndex, "V")
-            propertyIndex = sourceModel.index(0, 3, child)
-            sourceModel.setData(propertyIndex, "Voltage")
-            """
-
-            #item = sourceModel.getItem(sourceIndex)
-            item = sourceModel.rootItem() #rootitem
             sourceModel.layoutAboutToBeChanged.emit() #start changing model layout
 
-            item.insertChildren(0, 1, 4) #fileName item
-            item = item.child(0) #filename
-            item.setData(0, fileName)
-
-
-            item.insertChildren(0, 2, 4)
-            pathItem = item.child(0)
-            pathItem.setData(0, filePath)
-
-            propertyItem = item.child(1)
-            propertyItem.setData(0, "properties")
-
-            chnNum = tdmsObj.channelCount()
-            propertyItem.insertChildren(0, chnNum, 4)
-
-            for i in range(chnNum):
-                subPropertyItem = propertyItem.child(i)
-
-                subPropertyItem.setData(0, tdmsObj.channelName(i))
-                subPropertyItem.setData(1, tdmsObj.channelType(i))
-                subPropertyItem.setData(2, tdmsObj.channelUnit(i))
-                subPropertyItem.setData(3, tdmsObj.channelUnitDesc(i))
+            item = converter.toTreeItem(tdmsObj, 4, sourceModel.rootItem())
 
             sourceModel.layoutChanged.emit() #end changing model layout
-
-            print(item) #printout roottree model
-
+            """
 
     @pyqtSlot()
     def addDir(self):
@@ -197,16 +173,7 @@ class ViewController(QDialog, Ui_Dialog):
     @pyqtSlot()
     def addToOutputQueue(self):
         #Add selected files into working queue
-        indexes = self.inputListView.selectedIndexes()
-
-        if len(indexes) > 0:
-            tdmsObjs = []
-            for index in sorted(indexes, reverse=True):
-                tdmsObj = self.inputModel.data(index, role=TdmsObjListModel.ObjRole)
-                self.inputModel.removeRow(index.row())
-                tdmsObjs.append(tdmsObj)
-
-            self.outputListModel.addTdmsObjs(tdmsObjs)
+        pass
 
     @pyqtSlot()
     def backToInput(self):
@@ -226,4 +193,22 @@ class ViewController(QDialog, Ui_Dialog):
     @pyqtSlot()
     def runOutputQueue(self):
         #Convert the files in working queue
-        pass
+        indexes = self.outputListView.selectedIndexes()
+
+        if len(indexes) > 0:
+            tdmsObjs = []
+            converter = TdmsTreeItemConverter()
+
+            proxyModel = self.outputListView.model()
+            sourceModel = proxyModel.sourceModel()
+
+            for idx in indexes:
+                sourceIdx = proxyModel.mapToSource(idx)
+                dataSetItem = sourceModel.getItem(sourceIdx)
+                tdmsObj = converter.toTdmsObj(dataSetItem, 4)
+
+                tdmsObjs.append(tdmsObj)
+
+            for obj in tdmsObjs:
+                worker = TdmsUffWorker(obj, '')
+                self._threadPool.start(worker)

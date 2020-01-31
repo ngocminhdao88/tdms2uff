@@ -29,7 +29,7 @@
     "1/min":{
         "number":19,
         "unit_desc": "rpm"},
-    "Pa":{"number":21,
+    "Pascals":{"number":21,
           "unit_desc": "sound pressure"},
     "W":{"number":23,
          "unit_desc": "sound power"}}
