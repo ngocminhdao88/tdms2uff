@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(1024, 768)
+        Dialog.resize(1238, 768)
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout(Dialog)
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.verticalLayout = QtWidgets.QVBoxLayout()
@@ -53,6 +53,7 @@ class Ui_Dialog(object):
         self.channelsMappingLabel.setObjectName("channelsMappingLabel")
         self.verticalLayout_2.addWidget(self.channelsMappingLabel)
         self.channelsTreeView = QtWidgets.QTreeView(Dialog)
+        self.channelsTreeView.setMinimumSize(QtCore.QSize(550, 0))
         self.channelsTreeView.setObjectName("channelsTreeView")
         self.verticalLayout_2.addWidget(self.channelsTreeView)
         self.horizontalLayout_3.addLayout(self.verticalLayout_2)

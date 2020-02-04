@@ -64,6 +64,10 @@ class ViewController(QDialog, Ui_Dialog):
         proxyIndex = model.mapFromSource(sourceIndex)
         self.channelsTreeView.setRootIndex(proxyIndex)
 
+        #fit the column width
+        self.channelsTreeView.resizeColumnToContents(0)
+        self.channelsTreeView.resizeColumnToContents(1)
+
     @pyqtSlot()
     def removeFromInput(self):
         #Remove selected items from input list view
@@ -177,7 +181,8 @@ class ViewController(QDialog, Ui_Dialog):
 
     @pyqtSlot()
     def runOutputQueue(self):
-        #Convert the files in working queue
+        #Convert the files in working queue to UFF
+        #by sending it to the TdmsUffWorker
         indexes = self.outputListView.selectedIndexes()
 
         if len(indexes) > 0:
@@ -195,5 +200,5 @@ class ViewController(QDialog, Ui_Dialog):
                 tdmsObjs.append(tdmsObj)
 
             for obj in tdmsObjs:
-                worker = TdmsUffWorker(obj, '')
+                worker = TdmsUffWorker(obj, self.outputDir)
                 self._threadPool.start(worker)
