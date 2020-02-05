@@ -1,6 +1,7 @@
 from PyQt5.QtCore import *
 from tdmsobj import TdmsObj
 from converter import *
+from convert import Convert
 
 class WorkerSignals(QObject):
     finished = pyqtSignal()
@@ -17,6 +18,7 @@ class TdmsUffWorker(QRunnable):
         self._outputPath = outputPath
         self._tdmsObj = tdmsObj
         self.signals = WorkerSignals()
+        self._converter = Convert(tdmsObj)
 
     @pyqtSlot()
     def run(self):
@@ -24,6 +26,7 @@ class TdmsUffWorker(QRunnable):
         Convertion code goes in this function
         """
         print("Thread start")
+        self._converter.convert_tdms()
 
 class TdmsImportWorker(QRunnable):
     """
