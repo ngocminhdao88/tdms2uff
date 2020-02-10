@@ -40,14 +40,14 @@ class ViewController(QDialog, Ui_Dialog):
 
         #VIEWS
         self.inputListView.setModel(self.inputProxyModel)
-        self.inputListView.clicked.connect(self.updateChannelsTreeView)
-        self.inputFilterEdit.textChanged.connect(self.inputProxyModel.setFilterRegExp)
 
         self.channelsTreeView.setModel(self.inputProxyModel)
 
         self.outputListView.setModel(self.outputModel)
 
         #SIGNALS->SLOTS
+        self.inputListView.clicked.connect(self.updateChannelsTreeView)
+        self.inputFilterEdit.textChanged.connect(self.inputProxyModel.setFilterRegExp)
         self.addFilesButton.clicked.connect(self.addFiles)
         self.addFolderButton.clicked.connect(self.addDir)
         self.removeFromInputButton.clicked.connect(self.removeFromInput)
@@ -108,9 +108,13 @@ class ViewController(QDialog, Ui_Dialog):
         self.channelsTreeView.resizeColumnToContents(0)
         self.channelsTreeView.resizeColumnToContents(1)
 
+
     @pyqtSlot()
     def removeFromInput(self):
-        #Remove selected items from input list view
+        """
+        Remove selected items from input list view
+        :return: None
+        """
         indexes = self.inputListView.selectedIndexes()
         model = self.inputListView.model() #proxymodel
         sourceModel = model.sourceModel()
@@ -121,6 +125,7 @@ class ViewController(QDialog, Ui_Dialog):
                 sourceIndex = model.mapToSource(index)
                 sourceModel.removeRow(sourceIndex.row(), sourceIndex.parent())
 
+
     @pyqtSlot(object)
     def updateSourceModel(self, obj):
         """
@@ -129,18 +134,25 @@ class ViewController(QDialog, Ui_Dialog):
         if not obj:
             return
 
-        proxyModel = self.inputListView.model()
-        sourceModel = proxyModel.sourceModel()
-        rootItem = sourceModel.rootItem()
+        rootItem = self.sourceModel.rootItem()
 
-        sourceModel.layoutAboutToBeChanged.emit()
+        self.sourceModel.layoutAboutToBeChanged.emit()
         rootItem.addChild(obj)
-        sourceModel.layoutChanged.emit()
+        self.sourceModel.layoutChanged.emit()
+
 
     @pyqtSlot()
     def removeFromOutput(self):
-        #Remove output files
-        pass
+        """
+        Remove selected items from output list view
+        :return: None
+        """
+        indexes = self.outputListView.selectedIndexes()
+
+        if len(indexes) > 0:
+            #Remove obj in reverse so it doesn't mess up the subsequent indexes
+            for index in sorted(indexes, reverse=True):
+                self.outputModel.removeRow(index.row(), index.parent())
 
 
     @pyqtSlot()
@@ -222,8 +234,12 @@ class ViewController(QDialog, Ui_Dialog):
 
     @pyqtSlot()
     def addToOutputQueue(self):
-        #Add selected files into working queue
+        """
+        Add selected files into working queue (output model)
+        """
+        #TODO: Logic
         pass
+
 
     @pyqtSlot()
     def backToInput(self):
