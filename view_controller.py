@@ -57,16 +57,22 @@ class ViewController(QDialog, Ui_Dialog):
 
         #TODO: not working when input is filterd
 
+
+        """
         model = index.model() #proxymodel
         sourceModel = model.sourceModel()
         sourceIndex = model.mapToSource(index)
 
         proxyIndex = model.mapFromSource(sourceIndex)
         self.channelsTreeView.setRootIndex(proxyIndex)
+        """
+
+        self.channelsTreeView.setRootIndex(index)
+
 
         #fit the column width
-        self.channelsTreeView.resizeColumnToContents(0)
-        self.channelsTreeView.resizeColumnToContents(1)
+        for i in range(self.sourceModel.columnCount()):
+            self.channelsTreeView.resizeColumnToContents(i)
 
     @pyqtSlot()
     def removeFromInput(self):
