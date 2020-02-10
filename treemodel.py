@@ -6,8 +6,7 @@ from treeitem import TreeItem
 
 class TreeModel(QAbstractItemModel):
     #Roles to filter input and output view
-    Input_Role = Qt.UserRole
-    Output_Role = Qt.UserRole + 1
+    Item_Role = Qt.UserRole
 
     def __init__(self, headers, data, parent=None) -> None:
         super(TreeModel, self).__init__(parent)
@@ -43,11 +42,16 @@ class TreeModel(QAbstractItemModel):
         if not index.isValid():
             return None
 
-        if role != Qt.DisplayRole and  role != Qt.EditRole:
-            return None
-
         item = self.getItem(index)
-        return item.data(index.column())
+
+        if role == Qt.DisplayRole or role == Qt.EditRole:
+            return item.data(index.column())
+
+        if role == TreeModel.Item_Role:
+            return item
+
+        return QVariant()
+
 
     def headerData(self, section, orientation, role) -> object:
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:

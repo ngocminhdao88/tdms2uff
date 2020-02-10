@@ -237,8 +237,25 @@ class ViewController(QDialog, Ui_Dialog):
         """
         Add selected files into working queue (output model)
         """
+        indexes = self.inputListView.selectedIndexes()
+
+        self.outputModel.layoutAboutToBeChanged.emit()
+        outputRootItem = self.outputModel.rootItem()
+
         #TODO: Logic
-        pass
+        if len(indexes) > 0:
+            for index in indexes:
+                sourceIndex = self.inputProxyModel.mapToSource(index)
+                item = self.sourceModel.data(sourceIndex, TreeModel.Item_Role)
+                outputRootItem.addChild(item)
+
+            """
+            for index in sorted(indexes, reverse=True):
+                sourceIndex = self.inputProxyModel.mapToSource(index)
+                self.sourceModel.removeRows(sourceIndex.row(), 1, sourceIndex.parent())
+            """
+
+        self.outputModel.layoutChanged.emit()
 
 
     @pyqtSlot()
