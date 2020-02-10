@@ -17,19 +17,62 @@ class ViewController(QDialog, Ui_Dialog):
         super(ViewController, self).__init__(parent)
         self.setupUi(self)
 
+        self._setupStatusMachine()
+
         self.outputDir = ""
 
         self._outputCounter = Counter()
 
+        #self._outputStatusMachine = QStateMachine()
+
+        self._threadPool = QThreadPool() #manage worker objects
+
+        headers = ["Name", "Type", "Unit", "Description"]
+        data = []
+
+        #MODELS
+        self.sourceModel = TreeModel(headers, data)
+
+        self.inputProxyModel = QSortFilterProxyModel(self)
+        self.inputProxyModel.setSourceModel(self.sourceModel)
+
+        self.outputModel = TreeModel(headers, data)
+
+        #VIEWS
+        self.inputListView.setModel(self.inputProxyModel)
+        self.inputListView.clicked.connect(self.updateChannelsTreeView)
+        self.inputFilterEdit.textChanged.connect(self.inputProxyModel.setFilterRegExp)
+
+        self.channelsTreeView.setModel(self.inputProxyModel)
+
+        self.outputListView.setModel(self.outputModel)
+
+        #SIGNALS->SLOTS
+        self.addFilesButton.clicked.connect(self.addFiles)
+        self.addFolderButton.clicked.connect(self.addDir)
+        self.removeFromInputButton.clicked.connect(self.removeFromInput)
+        self.addToOutputButton.clicked.connect(self.addToOutputQueue)
+
+        self.setOutputFolderButton.clicked.connect(self.setOutputDir)
+        self.convertButton.clicked.connect(self.runOutputQueue)
+        self.removeFromOutputButton.clicked.connect(self.removeFromOutput)
+        self.backToInputButton.clicked.connect(self.backToInput)
+
+
+    def _setupStatusMachine(self):
+        """
+        Setup the state machine to update the workstatus
+        of import tdms files and converting tdms files to uff files
+        """
         #setup a state machine to update the import file status
         self._importCounter = Counter()
         self._importStatusMachine = QStateMachine()
 
         self._importIdleState = QState()
-        self._importIdleState.assignProperty(self.inputStatus, "text", "idle")
+        self._importIdleState.assignProperty(self.inputStatus, "text", "<b>idle</b>")
 
         self._importWorkingState = QState()
-        self._importWorkingState.assignProperty(self.inputStatus, "text", "importing...")
+        self._importWorkingState.assignProperty(self.inputStatus, "text", "<b>importing...</b>")
 
         self._import_idleToWorkingTrans = QSignalTransition(self._importCounter.started)
         self._import_idleToWorkingTrans.setTargetState(self._importWorkingState)
@@ -45,38 +88,6 @@ class ViewController(QDialog, Ui_Dialog):
 
         self._importStatusMachine.start()
 
-        #self._outputStatusMachine = QStateMachine()
-
-        self._threadPool = QThreadPool() #manage worker objects
-
-        headers = ["Name", "Type", "Unit", "Description"]
-        data = []
-
-        self.sourceModel = TreeModel(headers, data)
-
-        self.inputProxyModel = QSortFilterProxyModel(self)
-        self.inputProxyModel.setSourceModel(self.sourceModel)
-
-        self.outputProxyModel = QSortFilterProxyModel(self)
-        self.outputProxyModel.setSourceModel(self.sourceModel)
-
-        self.inputListView.setModel(self.inputProxyModel)
-        self.inputListView.clicked.connect(self.updateChannelsTreeView)
-
-        self.channelsTreeView.setModel(self.inputProxyModel)
-        self.outputListView.setModel(self.outputProxyModel)
-
-        self.inputFilterEdit.textChanged.connect(self.inputProxyModel.setFilterRegExp)
-
-        self.addFilesButton.clicked.connect(self.addFiles)
-        self.addFolderButton.clicked.connect(self.addDir)
-        self.removeFromInputButton.clicked.connect(self.removeFromInput)
-        self.addToOutputButton.clicked.connect(self.addToOutputQueue)
-
-        self.setOutputFolderButton.clicked.connect(self.setOutputDir)
-        self.convertButton.clicked.connect(self.runOutputQueue)
-        self.removeFromOutputButton.clicked.connect(self.removeFromOutput)
-        self.backToInputButton.clicked.connect(self.backToInput)
 
     @pyqtSlot(QModelIndex)
     def updateChannelsTreeView(self, index):
@@ -131,9 +142,13 @@ class ViewController(QDialog, Ui_Dialog):
         #Remove output files
         pass
 
+
     @pyqtSlot()
     def addFiles(self):
-        #Open a dialog to select one or multiple files
+        """
+        Open a dialog to select one or multiple files
+        :return: None
+        """
         filePaths = QFileDialog.getOpenFileNames(
                 self,
                 "Select one or more files",
@@ -142,9 +157,35 @@ class ViewController(QDialog, Ui_Dialog):
 
         #extract only the file path
         filePaths = filePaths[0]
-        converter = TdmsTreeItemConverter()
+        if len(filePaths) > 0:
+            converter = TdmsTreeItemConverter()
+            self._addFiles(filePaths)
 
-        self._addFiles(filePaths)
+
+    @pyqtSlot()
+    def addDir(self):
+        """
+        Import multiple files from a folder
+        """
+        selectedDir = QFileDialog.getExistingDirectory(
+                self,
+                "Open directory",
+                ".",
+                QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
+
+        #Add only tdms files into the input model
+        if len(selectedDir) > 0:
+            dirObj = QDir(selectedDir)
+            entryInfoList = dirObj.entryInfoList(
+                    ["*.tdms"],
+                    QDir.Files)
+
+            filePaths = []
+            for fileInfo in entryInfoList:
+                filePath = fileInfo.absoluteFilePath()
+                filePaths.append(filePath)
+
+            self._addFiles(filePaths)
 
 
     def _addFiles(self, filePaths):
@@ -166,27 +207,6 @@ class ViewController(QDialog, Ui_Dialog):
             self._threadPool.start(worker)
 
 
-    @pyqtSlot()
-    def addDir(self):
-        #Open a dialog to select working directory
-        selectedDir = QFileDialog.getExistingDirectory(
-                self,
-                "Open directory",
-                ".",
-                QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
-
-        #Add only tdms files into the input model
-        if len(selectedDir) > 0:
-            dirObj = QDir(selectedDir)
-            entryInfoList = dirObj.entryInfoList(
-                    ["*.tdms"],
-                    QDir.Files)
-
-            """
-            for fileInfo in entryInfoList:
-                filePath = fileInfo.absoluteFilePath()
-                self._addFile(filePath)
-            """
 
     @pyqtSlot()
     def setOutputDir(self):
