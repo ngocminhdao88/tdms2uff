@@ -9,6 +9,7 @@ from treeitem import TreeItem
 from treemodel import TreeModel
 from converter import TdmsTreeItemConverter
 from worker import TdmsUffWorker, TdmsImportWorker
+from counter import Counter
 
 class ViewController(QDialog, Ui_Dialog):
     def __init__(self, parent=None):
@@ -17,6 +18,34 @@ class ViewController(QDialog, Ui_Dialog):
         self.setupUi(self)
 
         self.outputDir = ""
+
+        self._outputCounter = Counter()
+
+        #setup a state machine to update the import file status
+        self._importCounter = Counter()
+        self._importStatusMachine = QStateMachine()
+
+        self._importIdleState = QState()
+        self._importIdleState.assignProperty(self.inputStatus, "text", "idle")
+
+        self._importWorkingState = QState()
+        self._importWorkingState.assignProperty(self.inputStatus, "text", "importing...")
+
+        self._import_idleToWorkingTrans = QSignalTransition(self._importCounter.started)
+        self._import_idleToWorkingTrans.setTargetState(self._importWorkingState)
+        self._import_workingToIdleTrans = QSignalTransition(self._importCounter.tripped)
+        self._import_workingToIdleTrans.setTargetState(self._importIdleState)
+
+        self._importIdleState.addTransition(self._import_idleToWorkingTrans)
+        self._importWorkingState.addTransition(self._import_workingToIdleTrans)
+
+        self._importStatusMachine.addState(self._importIdleState)
+        self._importStatusMachine.addState(self._importWorkingState)
+        self._importStatusMachine.setInitialState(self._importIdleState)
+
+        self._importStatusMachine.start()
+
+        #self._outputStatusMachine = QStateMachine()
 
         self._threadPool = QThreadPool() #manage worker objects
 
@@ -115,17 +144,27 @@ class ViewController(QDialog, Ui_Dialog):
         filePaths = filePaths[0]
         converter = TdmsTreeItemConverter()
 
+        self._addFiles(filePaths)
+
+
+    def _addFiles(self, filePaths):
+        """
+        Add multiple files into input model
+        :param filePaths: [str]
+        :return: None
+        """
+        self._importCounter.reset()
+        self._importCounter.setPreset(len(filePaths))
+        self._importCounter.started.emit()
+
         for filePath in filePaths:
-            self._addFile(filePath)
+            worker = TdmsImportWorker(filePath)
 
-    def _addFile(self, filePath):
-        """
-        Start a TdmsImportWorker thread to import big tdms file
-        """
-        worker = TdmsImportWorker(filePath)
-        worker.signals.result.connect(self.updateSourceModel)
+            worker.signals.result.connect(self.updateSourceModel)
+            worker.signals.finished.connect(self._importCounter.countUp)
 
-        self._threadPool.start(worker)
+            self._threadPool.start(worker)
+
 
     @pyqtSlot()
     def addDir(self):
@@ -143,9 +182,11 @@ class ViewController(QDialog, Ui_Dialog):
                     ["*.tdms"],
                     QDir.Files)
 
+            """
             for fileInfo in entryInfoList:
                 filePath = fileInfo.absoluteFilePath()
                 self._addFile(filePath)
+            """
 
     @pyqtSlot()
     def setOutputDir(self):
