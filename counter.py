@@ -1,7 +1,7 @@
 #Ngoc Minh Dao
 #minhdao.ngoc@linamar.com
 
-from PyQt5.QtCore import pyqtSignal, QObject
+from PyQt5.QtCore import pyqtSignal, QObject, pyqtSlot
 
 class Counter(QObject):
     """
@@ -11,6 +11,7 @@ class Counter(QObject):
     started = pyqtSignal()
 
     def __init__(self, counter=0, preset=0):
+        super(Counter, self).__init__()
         self._counter = counter
         self._preset = preset
 
@@ -46,6 +47,7 @@ class Counter(QObject):
         if counter != self._counter:
             self._counter = counter
 
+    @pyqtSlot()
     def countUp(self):
         """
         Increase the counter number by one.
@@ -58,6 +60,7 @@ class Counter(QObject):
         if self._counter >= self._preset:
             self.tripped.emit()
 
+    @pyqtSlot()
     def countDown(self):
         """
         decrease the counter number by one
@@ -72,7 +75,7 @@ class Counter(QObject):
 
     def reset(self):
         """
-        reset this counter
+        reset this counter back to 0
         :return: None
         """
         self._counter = 0

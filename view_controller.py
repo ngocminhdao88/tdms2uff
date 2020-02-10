@@ -9,6 +9,7 @@ from treeitem import TreeItem
 from treemodel import TreeModel
 from converter import TdmsTreeItemConverter
 from worker import TdmsUffWorker, TdmsImportWorker
+from counter import Counter
 
 class ViewController(QDialog, Ui_Dialog):
     def __init__(self, parent=None):
@@ -16,29 +17,37 @@ class ViewController(QDialog, Ui_Dialog):
         super(ViewController, self).__init__(parent)
         self.setupUi(self)
 
+        self._setupStatusMachine()
+
         self.outputDir = ""
+
+        self._outputCounter = Counter()
+
+        #self._outputStatusMachine = QStateMachine()
 
         self._threadPool = QThreadPool() #manage worker objects
 
         headers = ["Name", "Type", "Unit", "Description"]
         data = []
 
+        #MODELS
         self.sourceModel = TreeModel(headers, data)
 
         self.inputProxyModel = QSortFilterProxyModel(self)
         self.inputProxyModel.setSourceModel(self.sourceModel)
 
-        self.outputProxyModel = QSortFilterProxyModel(self)
-        self.outputProxyModel.setSourceModel(self.sourceModel)
+        self.outputModel = TreeModel(headers, data)
 
+        #VIEWS
         self.inputListView.setModel(self.inputProxyModel)
-        self.inputListView.clicked.connect(self.updateChannelsTreeView)
 
         self.channelsTreeView.setModel(self.inputProxyModel)
-        self.outputListView.setModel(self.outputProxyModel)
 
+        self.outputListView.setModel(self.outputModel)
+
+        #SIGNALS->SLOTS
+        self.inputListView.clicked.connect(self.updateChannelsTreeView)
         self.inputFilterEdit.textChanged.connect(self.inputProxyModel.setFilterRegExp)
-
         self.addFilesButton.clicked.connect(self.addFiles)
         self.addFolderButton.clicked.connect(self.addDir)
         self.removeFromInputButton.clicked.connect(self.removeFromInput)
@@ -48,6 +57,37 @@ class ViewController(QDialog, Ui_Dialog):
         self.convertButton.clicked.connect(self.runOutputQueue)
         self.removeFromOutputButton.clicked.connect(self.removeFromOutput)
         self.backToInputButton.clicked.connect(self.backToInput)
+
+
+    def _setupStatusMachine(self):
+        """
+        Setup the state machine to update the workstatus
+        of import tdms files and converting tdms files to uff files
+        """
+        #setup a state machine to update the import file status
+        self._importCounter = Counter()
+        self._importStatusMachine = QStateMachine()
+
+        self._importIdleState = QState()
+        self._importIdleState.assignProperty(self.inputStatus, "text", "<b>idle</b>")
+
+        self._importWorkingState = QState()
+        self._importWorkingState.assignProperty(self.inputStatus, "text", "<b>importing...</b>")
+
+        self._import_idleToWorkingTrans = QSignalTransition(self._importCounter.started)
+        self._import_idleToWorkingTrans.setTargetState(self._importWorkingState)
+        self._import_workingToIdleTrans = QSignalTransition(self._importCounter.tripped)
+        self._import_workingToIdleTrans.setTargetState(self._importIdleState)
+
+        self._importIdleState.addTransition(self._import_idleToWorkingTrans)
+        self._importWorkingState.addTransition(self._import_workingToIdleTrans)
+
+        self._importStatusMachine.addState(self._importIdleState)
+        self._importStatusMachine.addState(self._importWorkingState)
+        self._importStatusMachine.setInitialState(self._importIdleState)
+
+        self._importStatusMachine.start()
+
 
     @pyqtSlot(QModelIndex)
     def updateChannelsTreeView(self, index):
@@ -74,9 +114,13 @@ class ViewController(QDialog, Ui_Dialog):
         for i in range(self.sourceModel.columnCount()):
             self.channelsTreeView.resizeColumnToContents(i)
 
+
     @pyqtSlot()
     def removeFromInput(self):
-        #Remove selected items from input list view
+        """
+        Remove selected items from input list view
+        :return: None
+        """
         indexes = self.inputListView.selectedIndexes()
         model = self.inputListView.model() #proxymodel
         sourceModel = model.sourceModel()
@@ -87,6 +131,7 @@ class ViewController(QDialog, Ui_Dialog):
                 sourceIndex = model.mapToSource(index)
                 sourceModel.removeRow(sourceIndex.row(), sourceIndex.parent())
 
+
     @pyqtSlot(object)
     def updateSourceModel(self, obj):
         """
@@ -95,22 +140,33 @@ class ViewController(QDialog, Ui_Dialog):
         if not obj:
             return
 
-        proxyModel = self.inputListView.model()
-        sourceModel = proxyModel.sourceModel()
-        rootItem = sourceModel.rootItem()
+        rootItem = self.sourceModel.rootItem()
 
-        sourceModel.layoutAboutToBeChanged.emit()
+        self.sourceModel.layoutAboutToBeChanged.emit()
         rootItem.addChild(obj)
-        sourceModel.layoutChanged.emit()
+        self.sourceModel.layoutChanged.emit()
+
 
     @pyqtSlot()
     def removeFromOutput(self):
-        #Remove output files
-        pass
+        """
+        Remove selected items from output list view
+        :return: None
+        """
+        indexes = self.outputListView.selectedIndexes()
+
+        if len(indexes) > 0:
+            #Remove obj in reverse so it doesn't mess up the subsequent indexes
+            for index in sorted(indexes, reverse=True):
+                self.outputModel.removeRow(index.row(), index.parent())
+
 
     @pyqtSlot()
     def addFiles(self):
-        #Open a dialog to select one or multiple files
+        """
+        Open a dialog to select one or multiple files
+        :return: None
+        """
         filePaths = QFileDialog.getOpenFileNames(
                 self,
                 "Select one or more files",
@@ -119,23 +175,16 @@ class ViewController(QDialog, Ui_Dialog):
 
         #extract only the file path
         filePaths = filePaths[0]
-        converter = TdmsTreeItemConverter()
+        if len(filePaths) > 0:
+            converter = TdmsTreeItemConverter()
+            self._addFiles(filePaths)
 
-        for filePath in filePaths:
-            self._addFile(filePath)
-
-    def _addFile(self, filePath):
-        """
-        Start a TdmsImportWorker thread to import big tdms file
-        """
-        worker = TdmsImportWorker(filePath)
-        worker.signals.result.connect(self.updateSourceModel)
-
-        self._threadPool.start(worker)
 
     @pyqtSlot()
     def addDir(self):
-        #Open a dialog to select working directory
+        """
+        Import multiple files from a folder
+        """
         selectedDir = QFileDialog.getExistingDirectory(
                 self,
                 "Open directory",
@@ -149,9 +198,33 @@ class ViewController(QDialog, Ui_Dialog):
                     ["*.tdms"],
                     QDir.Files)
 
+            filePaths = []
             for fileInfo in entryInfoList:
                 filePath = fileInfo.absoluteFilePath()
-                self._addFile(filePath)
+                filePaths.append(filePath)
+
+            self._addFiles(filePaths)
+
+
+    def _addFiles(self, filePaths):
+        """
+        Add multiple files into input model
+        :param filePaths: [str]
+        :return: None
+        """
+        self._importCounter.reset()
+        self._importCounter.setPreset(len(filePaths))
+        self._importCounter.started.emit()
+
+        for filePath in filePaths:
+            worker = TdmsImportWorker(filePath)
+
+            worker.signals.result.connect(self.updateSourceModel)
+            worker.signals.finished.connect(self._importCounter.countUp)
+
+            self._threadPool.start(worker)
+
+
 
     @pyqtSlot()
     def setOutputDir(self):
@@ -167,8 +240,29 @@ class ViewController(QDialog, Ui_Dialog):
 
     @pyqtSlot()
     def addToOutputQueue(self):
-        #Add selected files into working queue
-        pass
+        """
+        Add selected files into working queue (output model)
+        """
+        indexes = self.inputListView.selectedIndexes()
+
+        self.outputModel.layoutAboutToBeChanged.emit()
+        outputRootItem = self.outputModel.rootItem()
+
+        #TODO: Logic
+        if len(indexes) > 0:
+            for index in indexes:
+                sourceIndex = self.inputProxyModel.mapToSource(index)
+                item = self.sourceModel.data(sourceIndex, TreeModel.Item_Role)
+                outputRootItem.addChild(item)
+
+            """
+            for index in sorted(indexes, reverse=True):
+                sourceIndex = self.inputProxyModel.mapToSource(index)
+                self.sourceModel.removeRows(sourceIndex.row(), 1, sourceIndex.parent())
+            """
+
+        self.outputModel.layoutChanged.emit()
+
 
     @pyqtSlot()
     def backToInput(self):
