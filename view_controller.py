@@ -257,41 +257,75 @@ class ViewController(QDialog, Ui_Dialog):
     def addToOutputQueue(self):
         """
         Add selected files into working queue (output model)
+        :return: None
         """
-        indexes = self.inputListView.selectedIndexes()
+        leftSelection = self.inputListView.selectedIndexes()
+        proxyModel = self.inputListView.model()
+        sourceModel = proxyModel.sourceModel()
+        columnCount = sourceModel.columnCount()
+        rightModel = self.outputModel
+        rightModelRootItem = rightModel.rootItem()
 
-        self.outputModel.layoutAboutToBeChanged.emit()
-        outputRootItem = self.outputModel.rootItem()
+        converter = TdmsTreeItemConverter()
 
-        #TODO: Logic
-        if len(indexes) > 0:
-            for index in indexes:
-                sourceIndex = self.inputProxyModel.mapToSource(index)
-                item = self.sourceModel.data(sourceIndex, TreeModel.Item_Role)
-                outputRootItem.addChild(item)
+        if not len(leftSelection) > 0:
+            return
 
-            """
-            for index in sorted(indexes, reverse=True):
-                sourceIndex = self.inputProxyModel.mapToSource(index)
-                self.sourceModel.removeRows(sourceIndex.row(), 1, sourceIndex.parent())
-            """
+        rightModel.layoutAboutToBeChanged.emit()
 
-        self.outputModel.layoutChanged.emit()
+        #add selected item to output view
+        for idx in leftSelection:
+            #copy a new treeitem by converting it a neutral tdmsobj first
+            #and then create a new treeitem from it
+            sourceIdx = proxyModel.mapToSource(idx)
+            item = sourceModel.getItem(sourceIdx)
+            tdmsObj = converter.toTdmsObj(item)
+            newItem = converter.toTreeItem(tdmsObj, columnCount)
+            rightModelRootItem.addChild(newItem)
+
+        rightModel.layoutChanged.emit()
+
+        #remove selected item from input view
+        for idx in sorted(leftSelection, reverse=True):
+            sourceIdx = proxyModel.mapToSource(idx)
+            sourceModel.removeRow(sourceIdx.row(), sourceIdx.parent())
+
 
 
     @pyqtSlot()
     def backToInput(self):
-        #Add selected files into working queue
-        indexes = self.outputListView.selectedIndexes()
+        """
+        Move selected files back into input view (source model). Right -> Left
+        :return: None
+        """
+        rightSelection = self.outputListView.selectedIndexes()
+        rightModel = self.outputListView.model()
+        leftModel = self.sourceModel
+        leftModelRootItem = leftModel.rootItem()
 
-        if len(indexes) > 0:
-            tdmsObjs = []
-            for index in sorted(indexes, reverse=True):
-                tdmsObj = self.outputListModel.data(index, role=TdmsObjListModel.ObjRole)
-                self.outputListModel.removeRow(index.row())
-                tdmsObjs.append(tdmsObj)
+        columnCount = rightModel.columnCount()
 
-            self.inputModel.addTdmsObjs(tdmsObjs)
+        converter = TdmsTreeItemConverter()
+
+        if not len(rightSelection) > 0:
+            return
+
+        leftModel.layoutAboutToBeChanged.emit()
+
+        #add selected item back to input view
+        for idx in rightSelection:
+            #copy a new treeitem by converting it a neutral tdmsobj first
+            #and then create a new treeitem from it
+            item = rightModel.getItem(idx)
+            tdmsObj = converter.toTdmsObj(item)
+            newItem = converter.toTreeItem(tdmsObj, columnCount)
+            leftModelRootItem.addChild(newItem)
+
+        leftModel.layoutChanged.emit()
+
+        #remove selected item from output view
+        for idx in sorted(rightSelection, reverse=True):
+            rightModel.removeRow(idx.row(), idx.parent())
 
 
     @pyqtSlot()

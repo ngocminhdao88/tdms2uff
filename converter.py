@@ -8,7 +8,7 @@ class TdmsTreeItemConverter(object):
     def __init__(self):
         pass
 
-    def toTdmsObj(self, item: TreeItem, columns=1) -> TdmsObj:
+    def toTdmsObj(self, item: TreeItem) -> TdmsObj:
         """
         Convert a TreeItem object to a tdms object
         """
