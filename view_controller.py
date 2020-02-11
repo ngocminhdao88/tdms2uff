@@ -336,18 +336,25 @@ class ViewController(QDialog, Ui_Dialog):
 
         if len(indexes) > 0:
             tdmsObjs = []
+
             converter = TdmsTreeItemConverter()
 
-            proxyModel = self.outputListView.model()
-            sourceModel = proxyModel.sourceModel()
+            sourceModel = self.outputListView.model()
+            columnCount = sourceModel.columnCount()
 
             for idx in indexes:
-                sourceIdx = proxyModel.mapToSource(idx)
-                dataSetItem = sourceModel.getItem(sourceIdx)
-                tdmsObj = converter.toTdmsObj(dataSetItem, 4)
+                dataSetItem = sourceModel.getItem(idx)
+                tdmsObj = converter.toTdmsObj(dataSetItem)
 
                 tdmsObjs.append(tdmsObj)
 
+            self._outputCounter.reset()
+            self._outputCounter.setPreset(len(tdmsObjs))
+            self._outputCounter.started.emit()
+
             for obj in tdmsObjs:
                 worker = TdmsUffWorker(obj, self.outputDir)
+
+                worker.signals.finished.connect(self._outputCounter.countUp)
+
                 self._threadPool.start(worker)

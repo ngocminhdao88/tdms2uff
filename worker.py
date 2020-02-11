@@ -25,8 +25,8 @@ class TdmsUffWorker(QRunnable):
         """
         Convertion code goes in this function
         """
-        print("Thread start")
         self._converter.convert_tdms()
+        self.signals.finished.emit()
 
 class TdmsImportWorker(QRunnable):
     """
