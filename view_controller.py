@@ -40,7 +40,7 @@ class ViewController(QDialog, Ui_Dialog):
         #VIEWS
         self.inputListView.setModel(self.inputProxyModel)
 
-        self.channelsTreeView.setModel(self.inputProxyModel)
+        self.channelsTreeView.setModel(self.sourceModel)
 
         self.outputListView.setModel(self.outputModel)
 
@@ -112,29 +112,20 @@ class ViewController(QDialog, Ui_Dialog):
         self._outputStatusMachine.start()
 
 
-
     @pyqtSlot(QModelIndex)
     def updateChannelsTreeView(self, index):
         #Show all channels of selected input file
         if not index.isValid():
             return
 
-        #TODO: not working when input is filterd
+        #get the index in source model from the proxy index
+        #and then set the root index of channel view to it
+        proxyModel = index.model() #proxymodel
+        sourceModel = proxyModel.sourceModel()
+        sourceIndex = proxyModel.mapToSource(index)
+        self.channelsTreeView.setRootIndex(sourceIndex)
 
-
-        """
-        model = index.model() #proxymodel
-        sourceModel = model.sourceModel()
-        sourceIndex = model.mapToSource(index)
-
-        proxyIndex = model.mapFromSource(sourceIndex)
-        self.channelsTreeView.setRootIndex(proxyIndex)
-        """
-
-        self.channelsTreeView.setRootIndex(index)
-
-
-        #fit the column width
+        #fit the column width in channel view to its contents
         for i in range(self.sourceModel.columnCount()):
             self.channelsTreeView.resizeColumnToContents(i)
 
