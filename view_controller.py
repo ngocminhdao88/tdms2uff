@@ -21,9 +21,6 @@ class ViewController(QDialog, Ui_Dialog):
 
         self.outputDir = ""
 
-
-        #self._outputStatusMachine = QStateMachine()
-
         self._threadPool = QThreadPool() #manage worker objects
 
         headers = ["Name", "Type", "Unit", "Description"]
@@ -39,10 +36,13 @@ class ViewController(QDialog, Ui_Dialog):
 
         #VIEWS
         self.inputListView.setModel(self.inputProxyModel)
+        self.inputListView.setAlternatingRowColors(True)
 
         self.channelsTreeView.setModel(self.sourceModel)
+        self.channelsTreeView.setAlternatingRowColors(True)
 
         self.outputListView.setModel(self.outputModel)
+        self.outputListView.setAlternatingRowColors(True)
 
         #SIGNALS->SLOTS
         self.inputListView.clicked.connect(self.updateChannelsTreeView)
@@ -69,9 +69,17 @@ class ViewController(QDialog, Ui_Dialog):
 
         self._importIdleState = QState()
         self._importIdleState.assignProperty(self.inputStatus, "text", "<b>idle</b>")
+        self._importIdleState.assignProperty(self.addFilesButton, "enabled", True)
+        self._importIdleState.assignProperty(self.addFolderButton, "enabled", True)
+        self._importIdleState.assignProperty(self.removeFromInputButton, "enabled", True)
+        self._importIdleState.assignProperty(self.addToOutputButton, "enabled", True)
 
         self._importWorkingState = QState()
         self._importWorkingState.assignProperty(self.inputStatus, "text", "<b>importing...</b>")
+        self._importWorkingState.assignProperty(self.addFilesButton, "enabled", False)
+        self._importWorkingState.assignProperty(self.addFolderButton, "enabled", False)
+        self._importWorkingState.assignProperty(self.removeFromInputButton, "enabled", False)
+        self._importWorkingState.assignProperty(self.addToOutputButton, "enabled", False)
 
         self._import_idleToWorkingTrans = QSignalTransition(self._importCounter.started)
         self._import_idleToWorkingTrans.setTargetState(self._importWorkingState)
@@ -93,9 +101,15 @@ class ViewController(QDialog, Ui_Dialog):
 
         self._outputIdleState = QState()
         self._outputIdleState.assignProperty(self.outputStatus, "text", "<b>idle</b>")
+        self._outputIdleState.assignProperty(self.convertButton, "enabled", True)
+        self._outputIdleState.assignProperty(self.removeFromOutputButton, "enabled", True)
+        self._outputIdleState.assignProperty(self.backToInputButton, "enabled", True)
 
         self._outputWorkingState = QState()
         self._outputWorkingState.assignProperty(self.outputStatus, "text", "<b>converting...</b>")
+        self._outputWorkingState.assignProperty(self.convertButton, "enabled", False)
+        self._outputWorkingState.assignProperty(self.removeFromOutputButton, "enabled", False)
+        self._outputWorkingState.assignProperty(self.backToInputButton, "enabled", False)
 
         self._output_idleToWorkingTrans = QSignalTransition(self._outputCounter.started)
         self._output_idleToWorkingTrans.setTargetState(self._outputWorkingState)
