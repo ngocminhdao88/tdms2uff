@@ -66,14 +66,24 @@
        <item>
         <widget class="QLabel" name="inputLabel">
          <property name="text">
-          <string>Input files:</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Input files:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="inputStatus">
+        <widget class="QLabel" name="inputStateLabel">
          <property name="text">
           <string>Idle</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="inputProgressLabel">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="text">
+          <string>TextLabel</string>
          </property>
         </widget>
        </item>
@@ -177,14 +187,21 @@
        <item>
         <widget class="QLabel" name="outputLabel">
          <property name="text">
-          <string>Output queue:</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Output queue:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="outputStatus">
+        <widget class="QLabel" name="outputStateLabel">
          <property name="text">
           <string>Idle</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="outputProgressLabel">
+         <property name="text">
+          <string>TextLabel</string>
          </property>
         </widget>
        </item>

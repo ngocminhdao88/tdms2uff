@@ -68,14 +68,16 @@ class ViewController(QDialog, Ui_Dialog):
         self._importStatusMachine = QStateMachine()
 
         self._importIdleState = QState()
-        self._importIdleState.assignProperty(self.inputStatus, "text", "<b>idle</b>")
+        self._importIdleState.assignProperty(self.inputStateLabel, "text", "idle")
+        self._importIdleState.assignProperty(self.inputProgressLabel, "visible", False)
         self._importIdleState.assignProperty(self.addFilesButton, "enabled", True)
         self._importIdleState.assignProperty(self.addFolderButton, "enabled", True)
         self._importIdleState.assignProperty(self.removeFromInputButton, "enabled", True)
         self._importIdleState.assignProperty(self.addToOutputButton, "enabled", True)
 
         self._importWorkingState = QState()
-        self._importWorkingState.assignProperty(self.inputStatus, "text", "<b>importing...</b>")
+        self._importWorkingState.assignProperty(self.inputStateLabel, "text", "importing... ")
+        self._importWorkingState.assignProperty(self.inputProgressLabel, "visible", True)
         self._importWorkingState.assignProperty(self.addFilesButton, "enabled", False)
         self._importWorkingState.assignProperty(self.addFolderButton, "enabled", False)
         self._importWorkingState.assignProperty(self.removeFromInputButton, "enabled", False)
@@ -100,13 +102,15 @@ class ViewController(QDialog, Ui_Dialog):
         self._outputStatusMachine = QStateMachine()
 
         self._outputIdleState = QState()
-        self._outputIdleState.assignProperty(self.outputStatus, "text", "<b>idle</b>")
+        self._outputIdleState.assignProperty(self.outputStateLabel, "text", "idle")
+        self._outputIdleState.assignProperty(self.outputProgressLabel, "visible", False)
         self._outputIdleState.assignProperty(self.convertButton, "enabled", True)
         self._outputIdleState.assignProperty(self.removeFromOutputButton, "enabled", True)
         self._outputIdleState.assignProperty(self.backToInputButton, "enabled", True)
 
         self._outputWorkingState = QState()
-        self._outputWorkingState.assignProperty(self.outputStatus, "text", "<b>converting...</b>")
+        self._outputWorkingState.assignProperty(self.outputStateLabel, "text", "converting... ")
+        self._outputWorkingState.assignProperty(self.outputProgressLabel, "visible", True)
         self._outputWorkingState.assignProperty(self.convertButton, "enabled", False)
         self._outputWorkingState.assignProperty(self.removeFromOutputButton, "enabled", False)
         self._outputWorkingState.assignProperty(self.backToInputButton, "enabled", False)
@@ -124,6 +128,20 @@ class ViewController(QDialog, Ui_Dialog):
         self._outputStatusMachine.setInitialState(self._outputIdleState)
 
         self._outputStatusMachine.start()
+
+
+    @pyqtSlot()
+    def _updateProgressLabel(self):
+        """
+        Update the working progress when importing files or converting files
+        """
+        #import progress label
+        text = str(self._importCounter.counter()) + "/" + str(self._importCounter.preset())
+        self.inputProgressLabel.setText(text)
+
+        #output progress label
+        text = str(self._outputCounter.counter()) + "/" + str(self._outputCounter.preset())
+        self.outputProgressLabel.setText(text)
 
 
     @pyqtSlot(QModelIndex)
@@ -250,6 +268,7 @@ class ViewController(QDialog, Ui_Dialog):
 
             worker.signals.result.connect(self.updateSourceModel)
             worker.signals.finished.connect(self._importCounter.countUp)
+            worker.signals.finished.connect(self._updateProgressLabel)
 
             self._threadPool.start(worker)
 

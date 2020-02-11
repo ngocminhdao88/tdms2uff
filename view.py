@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '.\view.ui'
+# Form implementation generated from reading ui file 'view.ui'
 #
-# Created by: PyQt5 UI code generator 5.13.0
+# Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
 
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -40,9 +38,13 @@ class Ui_Dialog(object):
         self.inputLabel = QtWidgets.QLabel(Dialog)
         self.inputLabel.setObjectName("inputLabel")
         self.horizontalLayout.addWidget(self.inputLabel)
-        self.inputStatus = QtWidgets.QLabel(Dialog)
-        self.inputStatus.setObjectName("inputStatus")
-        self.horizontalLayout.addWidget(self.inputStatus)
+        self.inputStateLabel = QtWidgets.QLabel(Dialog)
+        self.inputStateLabel.setObjectName("inputStateLabel")
+        self.horizontalLayout.addWidget(self.inputStateLabel)
+        self.inputProgressLabel = QtWidgets.QLabel(Dialog)
+        self.inputProgressLabel.setEnabled(True)
+        self.inputProgressLabel.setObjectName("inputProgressLabel")
+        self.horizontalLayout.addWidget(self.inputProgressLabel)
         spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem1)
         self.verticalLayout.addLayout(self.horizontalLayout)
@@ -88,9 +90,12 @@ class Ui_Dialog(object):
         self.outputLabel = QtWidgets.QLabel(Dialog)
         self.outputLabel.setObjectName("outputLabel")
         self.horizontalLayout_4.addWidget(self.outputLabel)
-        self.outputStatus = QtWidgets.QLabel(Dialog)
-        self.outputStatus.setObjectName("outputStatus")
-        self.horizontalLayout_4.addWidget(self.outputStatus)
+        self.outputStateLabel = QtWidgets.QLabel(Dialog)
+        self.outputStateLabel.setObjectName("outputStateLabel")
+        self.horizontalLayout_4.addWidget(self.outputStateLabel)
+        self.outputProgressLabel = QtWidgets.QLabel(Dialog)
+        self.outputProgressLabel.setObjectName("outputProgressLabel")
+        self.horizontalLayout_4.addWidget(self.outputProgressLabel)
         spacerItem3 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_4.addItem(spacerItem3)
         self.verticalLayout_3.addLayout(self.horizontalLayout_4)
@@ -110,12 +115,15 @@ class Ui_Dialog(object):
         self.addFolderButton.setText(_translate("Dialog", "Add folder"))
         self.removeFromInputButton.setText(_translate("Dialog", "Remove"))
         self.addToOutputButton.setText(_translate("Dialog", "Add to output"))
-        self.inputLabel.setText(_translate("Dialog", "Input files:"))
-        self.inputStatus.setText(_translate("Dialog", "Idle"))
+        self.inputLabel.setText(_translate("Dialog", "<html><head/><body><p><span style=\" font-weight:600;\">Input files:</span></p></body></html>"))
+        self.inputStateLabel.setText(_translate("Dialog", "Idle"))
+        self.inputProgressLabel.setText(_translate("Dialog", "TextLabel"))
         self.channelsMappingLabel.setText(_translate("Dialog", "Channels mapping"))
         self.setOutputFolderButton.setText(_translate("Dialog", "Set folder"))
         self.convertButton.setText(_translate("Dialog", "Convert"))
         self.removeFromOutputButton.setText(_translate("Dialog", "Remove"))
         self.backToInputButton.setText(_translate("Dialog", "Back to input"))
-        self.outputLabel.setText(_translate("Dialog", "Output queue:"))
-        self.outputStatus.setText(_translate("Dialog", "Idle"))
+        self.outputLabel.setText(_translate("Dialog", "<html><head/><body><p><span style=\" font-weight:600;\">Output queue:</span></p></body></html>"))
+        self.outputStateLabel.setText(_translate("Dialog", "Idle"))
+        self.outputProgressLabel.setText(_translate("Dialog", "TextLabel"))
+
