@@ -21,7 +21,6 @@ class ViewController(QDialog, Ui_Dialog):
 
         self.outputDir = ""
 
-        self._outputCounter = Counter()
 
         #self._outputStatusMachine = QStateMachine()
 
@@ -87,6 +86,31 @@ class ViewController(QDialog, Ui_Dialog):
         self._importStatusMachine.setInitialState(self._importIdleState)
 
         self._importStatusMachine.start()
+
+        #setup a state machine to update the converting work status
+        self._outputCounter = Counter()
+        self._outputStatusMachine = QStateMachine()
+
+        self._outputIdleState = QState()
+        self._outputIdleState.assignProperty(self.outputStatus, "text", "<b>idle</b>")
+
+        self._outputWorkingState = QState()
+        self._outputWorkingState.assignProperty(self.outputStatus, "text", "<b>converting...</b>")
+
+        self._output_idleToWorkingTrans = QSignalTransition(self._outputCounter.started)
+        self._output_idleToWorkingTrans.setTargetState(self._outputWorkingState)
+        self._output_workingToIdleTrans = QSignalTransition(self._outputCounter.tripped)
+        self._output_workingToIdleTrans.setTargetState(self._outputIdleState)
+
+        self._outputIdleState.addTransition(self._output_idleToWorkingTrans)
+        self._outputWorkingState.addTransition(self._output_workingToIdleTrans)
+
+        self._outputStatusMachine.addState(self._outputIdleState)
+        self._outputStatusMachine.addState(self._outputWorkingState)
+        self._outputStatusMachine.setInitialState(self._outputIdleState)
+
+        self._outputStatusMachine.start()
+
 
 
     @pyqtSlot(QModelIndex)
