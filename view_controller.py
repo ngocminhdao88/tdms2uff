@@ -262,6 +262,7 @@ class ViewController(QDialog, Ui_Dialog):
         self._importCounter.reset()
         self._importCounter.setPreset(len(filePaths))
         self._importCounter.started.emit()
+        self._updateProgressLabel()
 
         for filePath in filePaths:
             worker = TdmsImportWorker(filePath)
@@ -384,10 +385,12 @@ class ViewController(QDialog, Ui_Dialog):
             self._outputCounter.reset()
             self._outputCounter.setPreset(len(tdmsObjs))
             self._outputCounter.started.emit()
+            self._updateProgressLabel()
 
             for obj in tdmsObjs:
                 worker = TdmsUffWorker(obj, self.outputDir)
 
                 worker.signals.finished.connect(self._outputCounter.countUp)
+                worker.signals.finished.connect(self._updateProgressLabel)
 
                 self._threadPool.start(worker)
