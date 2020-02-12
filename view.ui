@@ -21,28 +21,35 @@
        <item>
         <widget class="QPushButton" name="addFilesButton">
          <property name="text">
-          <string>Add files</string>
+          <string>+ Files</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="addFolderButton">
          <property name="text">
-          <string>Add folder</string>
+          <string>+ Dir</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="addSubfolderButton">
+         <property name="text">
+          <string>+ Subdir</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="removeFromInputButton">
          <property name="text">
-          <string>Remove</string>
+          <string>- Files</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="addToOutputButton">
          <property name="text">
-          <string>Add to output</string>
+          <string>&gt;&gt; Output</string>
          </property>
         </widget>
        </item>
@@ -156,14 +163,14 @@
        <item>
         <widget class="QPushButton" name="removeFromOutputButton">
          <property name="text">
-          <string>Remove</string>
+          <string>- Files</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="backToInputButton">
          <property name="text">
-          <string>Back to input</string>
+          <string>&lt;&lt; Input</string>
          </property>
         </widget>
        </item>

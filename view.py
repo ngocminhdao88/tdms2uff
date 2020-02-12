@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'view.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
@@ -24,6 +26,9 @@ class Ui_Dialog(object):
         self.addFolderButton = QtWidgets.QPushButton(Dialog)
         self.addFolderButton.setObjectName("addFolderButton")
         self.horizontalLayout_3.addWidget(self.addFolderButton)
+        self.addSubfolderButton = QtWidgets.QPushButton(Dialog)
+        self.addSubfolderButton.setObjectName("addSubfolderButton")
+        self.horizontalLayout_3.addWidget(self.addSubfolderButton)
         self.removeFromInputButton = QtWidgets.QPushButton(Dialog)
         self.removeFromInputButton.setObjectName("removeFromInputButton")
         self.horizontalLayout_3.addWidget(self.removeFromInputButton)
@@ -111,19 +116,19 @@ class Ui_Dialog(object):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
-        self.addFilesButton.setText(_translate("Dialog", "Add files"))
-        self.addFolderButton.setText(_translate("Dialog", "Add folder"))
-        self.removeFromInputButton.setText(_translate("Dialog", "Remove"))
-        self.addToOutputButton.setText(_translate("Dialog", "Add to output"))
+        self.addFilesButton.setText(_translate("Dialog", "+ Files"))
+        self.addFolderButton.setText(_translate("Dialog", "+ Dir"))
+        self.addSubfolderButton.setText(_translate("Dialog", "+ Subdir"))
+        self.removeFromInputButton.setText(_translate("Dialog", "- Files"))
+        self.addToOutputButton.setText(_translate("Dialog", ">> Output"))
         self.inputLabel.setText(_translate("Dialog", "<html><head/><body><p><span style=\" font-weight:600;\">Input files:</span></p></body></html>"))
         self.inputStateLabel.setText(_translate("Dialog", "Idle"))
         self.inputProgressLabel.setText(_translate("Dialog", "TextLabel"))
         self.channelsMappingLabel.setText(_translate("Dialog", "Channels mapping"))
         self.setOutputFolderButton.setText(_translate("Dialog", "Set folder"))
         self.convertButton.setText(_translate("Dialog", "Convert"))
-        self.removeFromOutputButton.setText(_translate("Dialog", "Remove"))
-        self.backToInputButton.setText(_translate("Dialog", "Back to input"))
+        self.removeFromOutputButton.setText(_translate("Dialog", "- Files"))
+        self.backToInputButton.setText(_translate("Dialog", "<< Input"))
         self.outputLabel.setText(_translate("Dialog", "<html><head/><body><p><span style=\" font-weight:600;\">Output queue:</span></p></body></html>"))
         self.outputStateLabel.setText(_translate("Dialog", "Idle"))
         self.outputProgressLabel.setText(_translate("Dialog", "TextLabel"))
-

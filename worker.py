@@ -4,6 +4,7 @@ from converter import *
 from convert import Convert
 
 class WorkerSignals(QObject):
+    started = pyqtSignal()
     finished = pyqtSignal()
     error = pyqtSignal(object)
     result = pyqtSignal(object)
@@ -27,6 +28,7 @@ class TdmsUffWorker(QRunnable):
         """
         self._converter.convert_tdms()
         self.signals.finished.emit()
+
 
 class TdmsImportWorker(QRunnable):
     """
@@ -56,5 +58,29 @@ class TdmsImportWorker(QRunnable):
         item = converter.toTreeItem(tdmsObj, 4)
 
         self.signals.result.emit(item)
+        self.signals.finished.emit()
+
+class TdmsSearchWorker(QRunnable):
+    """
+    Worker that searching for tdms files in sub directory
+    """
+    def __init__(self, rootPath):
+        super(TdmsSearchWorker, self).__init__()
+        self.signals = WorkerSignals()
+        self._rootPath = rootPath
+        self._filePaths = []
+
+    @pyqtSlot()
+    def run(self):
+        """
+        Search for all tdms files in subdirectories from the rootPath
+        """
+        it = QDirIterator(self._rootPath, ["*.tdms"], QDir.NoFilter, QDirIterator.Subdirectories)
+        self.signals.started.emit()
+
+        while it.hasNext():
+            self._filePaths.append(it.next())
+
+        self.signals.result.emit(self._filePaths)
         self.signals.finished.emit()
 

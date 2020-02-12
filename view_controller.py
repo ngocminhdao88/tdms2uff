@@ -8,8 +8,9 @@ from tdmsobj import TdmsObj
 from treeitem import TreeItem
 from treemodel import TreeModel
 from converter import TdmsTreeItemConverter
-from worker import TdmsUffWorker, TdmsImportWorker
+from worker import *
 from counter import Counter
+from my_statemachine import *
 
 class ViewController(QDialog, Ui_Dialog):
     def __init__(self, parent=None):
@@ -48,7 +49,8 @@ class ViewController(QDialog, Ui_Dialog):
         self.inputListView.clicked.connect(self.updateChannelsTreeView)
         self.inputFilterEdit.textChanged.connect(self.inputProxyModel.setFilterRegExp)
         self.addFilesButton.clicked.connect(self.addFiles)
-        self.addFolderButton.clicked.connect(self.addDir)
+        self.addFolderButton.clicked.connect(self.addFolder)
+        self.addSubfolderButton.clicked.connect(self.addSubfolder)
         self.removeFromInputButton.clicked.connect(self.removeFromInput)
         self.addToOutputButton.clicked.connect(self.addToOutputQueue)
 
@@ -72,14 +74,20 @@ class ViewController(QDialog, Ui_Dialog):
         self._importIdleState.assignProperty(self.inputProgressLabel, "visible", False)
         self._importIdleState.assignProperty(self.addFilesButton, "enabled", True)
         self._importIdleState.assignProperty(self.addFolderButton, "enabled", True)
+        self._importIdleState.assignProperty(self.addSubfolderButton, "enabled", True)
         self._importIdleState.assignProperty(self.removeFromInputButton, "enabled", True)
         self._importIdleState.assignProperty(self.addToOutputButton, "enabled", True)
+
+        self._importSearchingState = QState()
+        self._importSearchingState.assignProperty(self.inputStateLabel, "text", "searching..")
+        self._importSearchingState.assignProperty(self.addSubfolderButton, "enabled", False)
 
         self._importWorkingState = QState()
         self._importWorkingState.assignProperty(self.inputStateLabel, "text", "importing... ")
         self._importWorkingState.assignProperty(self.inputProgressLabel, "visible", True)
         self._importWorkingState.assignProperty(self.addFilesButton, "enabled", False)
         self._importWorkingState.assignProperty(self.addFolderButton, "enabled", False)
+        self._importWorkingState.assignProperty(self.addSubfolderButton, "enabled", False)
         self._importWorkingState.assignProperty(self.removeFromInputButton, "enabled", False)
         self._importWorkingState.assignProperty(self.addToOutputButton, "enabled", False)
 
@@ -88,11 +96,23 @@ class ViewController(QDialog, Ui_Dialog):
         self._import_workingToIdleTrans = QSignalTransition(self._importCounter.tripped)
         self._import_workingToIdleTrans.setTargetState(self._importIdleState)
 
+        self._import_idleToSearchingTrans = StartSearchingTransition()
+        self._import_idleToSearchingTrans.setTargetState(self._importSearchingState)
+
+        self._import_searchingToWorkingTrans = EndSearchingTransition()
+        self._import_searchingToWorkingTrans.setTargetState(self._importWorkingState)
+
         self._importIdleState.addTransition(self._import_idleToWorkingTrans)
+        self._importIdleState.addTransition(self._import_idleToSearchingTrans)
+
+        self._importSearchingState.addTransition(self._import_searchingToWorkingTrans)
+
         self._importWorkingState.addTransition(self._import_workingToIdleTrans)
 
         self._importStatusMachine.addState(self._importIdleState)
+        self._importStatusMachine.addState(self._importSearchingState)
         self._importStatusMachine.addState(self._importWorkingState)
+
         self._importStatusMachine.setInitialState(self._importIdleState)
 
         self._importStatusMachine.start()
@@ -228,7 +248,7 @@ class ViewController(QDialog, Ui_Dialog):
 
 
     @pyqtSlot()
-    def addDir(self):
+    def addFolder(self):
         """
         Import multiple files from a folder
         """
@@ -253,6 +273,38 @@ class ViewController(QDialog, Ui_Dialog):
             self._addFiles(filePaths)
 
 
+    @pyqtSlot()
+    def addSubfolder(self):
+        """
+        Import multiple files from folder and its subfolders
+        """
+        selectedDir = QFileDialog.getExistingDirectory(
+                self,
+                "Open directory",
+                ".",
+                QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks)
+
+        if not len(selectedDir) > 0:
+            return
+
+        self._importStatusMachine.postEvent(StartSearchingEvent())
+
+        searchWorker = TdmsSearchWorker(selectedDir)
+        searchWorker.signals.result.connect(self._addFiles)
+        searchWorker.signals.finished.connect(self._endSearchingWrapper)
+
+        self._threadPool.start(searchWorker)
+
+
+    @pyqtSlot()
+    def _endSearchingWrapper(self):
+        """
+        """
+        #TODO: Docstring
+        self._importStatusMachine.postEvent(EndSearchingEvent())
+
+
+    @pyqtSlot(object)
     def _addFiles(self, filePaths):
         """
         Add multiple files into input model
@@ -272,7 +324,6 @@ class ViewController(QDialog, Ui_Dialog):
             worker.signals.finished.connect(self._updateProgressLabel)
 
             self._threadPool.start(worker)
-
 
 
     @pyqtSlot()
