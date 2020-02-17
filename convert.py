@@ -19,10 +19,10 @@ abscissa_axis_units_lab= 's'
 orddenom_spec_data_type= 0
 
 class Convert:
-    
-    #def __init__(self,path):
+    """
+    This class convert a tdms object to uff58 file
+    """
     def __init__(self,tdmsObj):
-        #self.path = path
         self._tdmsObj = tdmsObj
 
     def convert_tdms (self):
@@ -115,17 +115,4 @@ class Convert:
                 }
             #uffwrite = pyuff.UFF(self.path[:-5]+".uff")
             uffwrite = pyuff.UFF(self._tdmsObj.path()[:-5]+".uff")
-            uffwrite._write_set(uff_data,'add')
-            #print('added '+channel_name)
-
-    def check (self):
-        if os.path.exists(self.path[:-5] + ".uff") == 1:
-            print("Datei schon vorhanden!")
-        else:
-            pass
-
-    def delete (self):
-        try:
-            os.remove(self.path[:] + ".uff")
-        except:
-            print(self.path)
+            uffwrite._write_set(uff_data,'overwrite')
